@@ -71,7 +71,7 @@ const NEWSLETTER_CONFIG = {
   active: true,
 
   /* ✏️ Delay in milliseconds before popup appears */
-  delayMs: 1000,   /* 10 seconds */
+  delayMs: 20000,   /* 10 seconds */
 
   heading: {
     en: 'Join the NOVA Family 💌',
