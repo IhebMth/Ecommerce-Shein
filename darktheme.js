@@ -60,4 +60,6 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initTheme);
 } else {
   initTheme();
+
 }
+
