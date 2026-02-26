@@ -428,10 +428,10 @@
 <script src="shop.js"></script>
 <script src="modal.js"></script>
 <script src="checkout.js"></script>
-<script src="darkTheme.js"></script>
-<script src="trustBar.js"></script>
+<script src="darktheme.js"></script>
+<script src="trustbar.js"></script>
 <script src="reviews.js"></script>
-<script src="infoSections.js"></script>
+<script src="infosections.js"></script>
 <script src="engagement.js"></script>
 <script src="analytics.js"></script>
 <script>
@@ -700,7 +700,7 @@ function initModalSwipe() {
 }
 
 /* ── EVENT LISTENERS ── */
-document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+document.getElementById('theme-toggle').addEventListener('click', () => { if (typeof toggleTheme === 'function') toggleTheme(); });
 document.getElementById('close-modal').addEventListener('click', closeProduct);
 document.getElementById('product-overlay').addEventListener('click', e => {
   if (e.target === document.getElementById('product-overlay')) closeProduct();
@@ -749,10 +749,10 @@ function init() {
   loadCart();
   loadWishlist();
   applyTranslations();
-  renderTrustBar();
-  renderInfoSections();
-  renderReviews();
-  renderWhatsApp();
+  try { renderTrustBar(); }    catch(e) { console.warn('renderTrustBar missing', e); }
+  try { renderInfoSections(); } catch(e) { console.warn('renderInfoSections missing', e); }
+  try { renderReviews(); }     catch(e) { console.warn('renderReviews missing', e); }
+  try { renderWhatsApp(); }    catch(e) { console.warn('renderWhatsApp missing', e); }
 
   /* Patch after all modules loaded */
   _patchFilterProducts();

@@ -22,8 +22,8 @@ const ANALYTICS_CONFIG = {
      4. Paste it below. Set enabled: true.
   ─────────────────────────────────────────────────────── */
   ga4: {
-    enabled: false,               /* ← set true after adding your ID */
-    measurementId: 'G-XXXXXXXXXX' /* ← paste your GA4 Measurement ID */
+    enabled: true,               /* ← set true after adding your ID */
+    measurementId: 'G-Q9ZK4QYW16' /* ← paste your GA4 Measurement ID */
   },
 
   /* ── PLAUSIBLE ANALYTICS ─────────────────────────────
@@ -35,7 +35,7 @@ const ANALYTICS_CONFIG = {
   ─────────────────────────────────────────────────────── */
   plausible: {
     enabled: false,                  /* ← set true after adding your domain */
-    domain:  'novafashion.store'     /* ← paste your exact site domain */
+    domain:  'https://enova-store.vercel.app/'     /* ← paste your exact site domain */
   },
 
   /* ── DEBUG MODE ──────────────────────────────────────
@@ -43,7 +43,7 @@ const ANALYTICS_CONFIG = {
      instead of being sent to analytics servers.
      ALWAYS set false before going live.
   ─────────────────────────────────────────────────────── */
-  debug: true
+  debug: false
 };
 
 /* ══════════════════════════════════════════════════════════

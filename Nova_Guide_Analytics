@@ -103,8 +103,8 @@ Plausible works via their CDN. The `Analytics.js` loads it dynamically, but for 
 In `Index.html`, after the line with `Engagement.js`, add:
 
 ```html
-<script src="Engagement.js"></script>
-<script src="Analytics.js"></script>   <!-- ← add this line -->
+<script src="engagement.js"></script>
+<script src="analytics.js"></script>   <!-- ← add this line -->
 ```
 
 It must be the **last** script — it needs all other functions to exist first.
