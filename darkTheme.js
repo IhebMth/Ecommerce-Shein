@@ -54,9 +54,10 @@ function initTheme() {
   }
 }
 
-// Single entry point — wire button and init theme once DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-  const btn = document.getElementById('theme-toggle');
-  if (btn) btn.addEventListener('click', toggleTheme);
+// Init theme on load — button wiring is handled in index.html inline script
+// (Avoids double-listener that would cancel every click)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initTheme);
+} else {
   initTheme();
-});
+}
