@@ -1,0 +1,308 @@
+# NOVA Store — Complete Guide
+## Analytics · Future Improvements · GitHub + Vercel Deployment
+
+---
+
+## PART 1 — Analytics (Feature #20)
+
+### What we built
+
+`Analytics.js` is a **drop-in tracker** that sits silently on top of all your existing code. It intercepts your store's functions and fires events automatically — you don't have to touch Cart.js, Modal.js, or anything else.
+
+**Events tracked:**
+
+| Event | When it fires |
+|---|---|
+| `page_view` | Every time the page loads |
+| `view_item` | When a product modal is opened |
+| `add_to_cart` | Modal "Add to Cart" button OR quick-add card button |
+| `remove_from_cart` | Trash/remove in cart panel |
+| `begin_checkout` | "Proceed to Checkout" click |
+| `purchase` | Order placed successfully |
+| `wishlist_add` | Heart button → add |
+| `wishlist_remove` | Heart button → remove |
+| `search` | Search bar (fires 0.8s after user stops typing) |
+| `filter_apply` | Category pill / nav tab click |
+
+Supports **Google Analytics 4** and **Plausible** at the same time — or just one.
+
+---
+
+### Option A — Google Analytics 4 (Free, Google)
+
+**Step 1 — Create a GA4 property**
+1. Go to https://analytics.google.com
+2. Click **Admin** (gear icon, bottom left)
+3. Click **Create Property** → choose **Web**
+4. Enter your site name (e.g. "NOVA Fashion") and URL
+5. Click through until you see a screen with your **Measurement ID** — it looks like `G-A1B2C3D4E5`
+
+**Step 2 — Add it to Analytics.js**
+
+Open `Analytics.js`, find this section:
+
+```js
+ga4: {
+  enabled: false,
+  measurementId: 'G-XXXXXXXXXX'
+},
+```
+
+Replace with:
+```js
+ga4: {
+  enabled: true,
+  measurementId: 'G-A1B2C3D4E5'   // ← your actual ID
+},
+```
+
+**Step 3 — Verify it works**
+1. Open your site in a browser
+2. Open DevTools → Console tab
+3. You'll see `[NOVA Analytics] EVENT: page_view` etc. in gold text
+4. In Google Analytics → **Realtime** → you should see yourself as 1 active user
+5. Once confirmed, set `debug: false` in the config
+
+**What you can see in GA4:**
+- How many people visit each day/week/month
+- Which products get viewed most
+- Where visitors drop off (view item → add to cart → checkout)
+- Which country/device/browser your customers use
+- How long people spend on your store
+
+---
+
+### Option B — Plausible (Privacy-friendly, No cookies, GDPR)
+
+Plausible is the better choice if your customers are in the EU or you want a clean simple dashboard. No cookie banners needed.
+
+**Step 1 — Create account**
+1. Go to https://plausible.io (30-day free trial, then ~$9/month)
+2. Sign up → Add Site → enter your domain (e.g. `novafashion.store`)
+
+**Step 2 — Add it to Analytics.js**
+```js
+plausible: {
+  enabled: true,
+  domain: 'novafashion.store'   // ← must match exactly what you typed in Plausible
+},
+```
+
+**Step 3 — Add the script tag to Index.html**
+
+Plausible works via their CDN. The `Analytics.js` loads it dynamically, but for best reliability also paste this inside your `<head>` in Index.html:
+
+```html
+<script defer data-domain="novafashion.store" src="https://plausible.io/js/script.outbound-links.js"></script>
+```
+
+---
+
+### How to add Analytics.js to your site
+
+In `Index.html`, after the line with `Engagement.js`, add:
+
+```html
+<script src="Engagement.js"></script>
+<script src="Analytics.js"></script>   <!-- ← add this line -->
+```
+
+It must be the **last** script — it needs all other functions to exist first.
+
+---
+
+## PART 2 — What Else Can Be Done
+
+Here's everything remaining, ranked by impact vs effort:
+
+### 🔴 High Impact, Easy
+
+**1. Real product images**
+Replace the Unsplash URLs in `products.js` with your actual product photos. Host them on Cloudinary (free tier) or just put them in your repo's `/images/` folder.
+
+**2. Your WhatsApp number**
+In `Index.html`, find the WhatsApp link and replace the phone number:
+```html
+href="https://wa.me/1234567890"  <!-- replace with your real number -->
+```
+
+**3. Your actual domain in meta tags**
+In `Index.html`, replace all `https://novafashion.store/` with your real URL (you'll get this after Vercel deployment).
+
+**4. EmailJS template fix**
+Your EmailJS template ID is already set. Make sure in your EmailJS template the variable names match: `{{order_id}}`, `{{customer_name}}`, `{{customer_address}}`, `{{customer_phone}}`, `{{order_details}}`, `{{order_total}}`, `{{order_date}}`.
+
+---
+
+### 🟡 High Impact, Medium Effort
+
+**5. Cookie / GDPR banner**
+If you sell to EU customers, you need a cookie consent banner before loading GA4. A simple one can be built in ~50 lines.
+
+**6. Product image hosting**
+Move images off Unsplash (which can be slow and change URLs) to Cloudinary or Vercel's image optimization.
+
+**7. Quantity controls in cart**
+Currently users can only add more items by going back to the product. Add +/- buttons directly in the cart panel.
+
+**8. Order history page**
+Save completed orders to `localStorage` so customers can see their past orders even without an account.
+
+**9. Facebook Pixel**
+If you run Facebook/Instagram ads, add the Meta Pixel alongside GA4. Same pattern as Analytics.js — 10 lines of code.
+
+**10. Size chart images**
+The size guide popup currently shows text only. Add a real measurement chart image per category (Shoes, Leggings, T-Shirts).
+
+---
+
+### 🟢 Lower Priority
+
+**11. Product reviews form**
+Currently reviews are hardcoded. Build a simple form that saves to a free service like Supabase or Airtable.
+
+**12. Stock management**
+Right now stock numbers are static in `products.js`. Connect to a Google Sheet via API to manage stock without touching code.
+
+**13. Instagram feed section**
+Embed your Instagram grid at the bottom using a free widget like SnapWidget.
+
+**14. Progressive Web App (PWA)**
+Add a `manifest.json` and service worker so customers can "install" your store on their phone homescreen like an app.
+
+---
+
+## PART 3 — Deploy on GitHub + Vercel
+
+This is the full process from zero to live URL in about 15 minutes.
+
+---
+
+### Step 1 — Create a GitHub account
+
+1. Go to https://github.com
+2. Sign up (free)
+3. Verify your email
+
+---
+
+### Step 2 — Create a new repository
+
+1. On GitHub, click the **+** icon (top right) → **New repository**
+2. Name it: `nova-store` (or anything you like)
+3. Set it to **Public**
+4. Leave everything else as default
+5. Click **Create repository**
+
+---
+
+### Step 3 — Upload your files
+
+Your project is a static site (no build step needed). All your files go in the root of the repo.
+
+**Using the GitHub website (easiest):**
+1. On your new repo page, click **Add file** → **Upload files**
+2. Drag and drop ALL your files:
+   ```
+   Index.html
+   styles.css
+   extras.css
+   products.js
+   i18n.js
+   lang.js
+   cart.js
+   Shop.js
+   Modal.js
+   checkout.js
+   darkTheme.js
+   TrustBar.js
+   Reviews.js
+   InfoSections.js
+   Engagement.js
+   Analytics.js       ← the new file
+   storage.js
+   ```
+3. At the bottom, click **Commit changes**
+
+**Important:** GitHub is case-sensitive. Your `Index.html` needs to be exactly `index.html` (lowercase) — rename it before uploading. Same for script filenames — make sure the names in your `<script src="...">` tags match exactly (same capitalization) as the actual files.
+
+**Quick rename checklist for Index.html script tags:**
+```
+index.html           (rename from Index.html)
+lang.js              ✓
+cart.js              ✓
+Shop.js              ✓  (or rename to shop.js and update the tag)
+Modal.js             ✓  (or rename to modal.js)
+checkout.js          ✓
+darkTheme.js         ✓  (or rename to darktheme.js)
+TrustBar.js          ✓  (or rename to trustbar.js)
+Reviews.js           ✓  (or rename to reviews.js)
+InfoSections.js      ✓  (or rename to infosections.js)
+Engagement.js        ✓  (or rename to engagement.js)
+Analytics.js         ✓  (or rename to analytics.js)
+```
+The safest approach: **make all filenames lowercase** before uploading, then update the `<script src>` tags to match.
+
+---
+
+### Step 4 — Deploy on Vercel
+
+Vercel is free, instant, and gives you a real HTTPS URL.
+
+1. Go to https://vercel.com
+2. Click **Sign up** → choose **Continue with GitHub** (uses the same account)
+3. Click **Add New Project**
+4. Find your `nova-store` repository → click **Import**
+5. Vercel will auto-detect it's a static site
+6. Leave all settings as default
+7. Click **Deploy**
+
+In about 30 seconds, you'll see:
+
+```
+🎉  nova-store-abc123.vercel.app
+```
+
+That's your live URL! Share it with anyone.
+
+---
+
+### Step 5 — Connect a custom domain (optional)
+
+If you want `www.novafashion.store` instead of the Vercel URL:
+
+1. Buy a domain from Namecheap, GoDaddy, or Cloudflare (~$10–15/year)
+2. In Vercel: go to your project → **Settings** → **Domains**
+3. Type your domain → Vercel gives you DNS records to copy
+4. In your domain registrar's DNS settings, paste those records
+5. Wait 5–60 minutes for DNS propagation
+6. Done — your custom domain now serves your Vercel site with free HTTPS
+
+---
+
+### Step 6 — Update your site in the future
+
+After the initial deploy, updating is just:
+1. Go to your GitHub repo
+2. Click the file you want to change → pencil icon to edit
+3. Make changes → **Commit changes**
+4. Vercel detects the commit and **automatically redeploys in ~20 seconds**
+
+No manual redeployment ever needed.
+
+---
+
+### Summary checklist
+
+```
+□ Create GitHub account
+□ Create repo "nova-store" (public)
+□ Rename Index.html → index.html
+□ Upload all files to GitHub
+□ Create Vercel account (sign in with GitHub)
+□ Import repo → Deploy
+□ Copy your live URL
+□ Update meta tags in index.html with your real URL
+□ (Optional) Add Analytics.js → set debug: true → verify → set debug: false
+□ (Optional) Buy domain → connect in Vercel
+```

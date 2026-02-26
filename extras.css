@@ -1,0 +1,885 @@
+/* ============================================================
+   EXTRAS.CSS — Styles for: Skeleton Loading, Trust Bar,
+   Customer Reviews, Delivery/Returns Info, WhatsApp Float
+============================================================ */
+
+/* ── SKELETON LOADING ── */
+[data-theme="light"] { --skeleton-base: #e8e8e8; --trust-bg: #fafafa; --accent-light: #fef3f2; }
+[data-theme="dark"]  { --skeleton-base: #2a2a2a; --trust-bg: #111;    --accent-light: #2a1a1a; }
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+}
+.skeleton-card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.skeleton-img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: var(--skeleton-base);
+  position: relative;
+  overflow: hidden;
+}
+.skeleton-info { padding: 1rem; }
+.skeleton-line {
+  height: 14px;
+  border-radius: 8px;
+  background: var(--skeleton-base);
+  margin-bottom: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.skeleton-line.short  { width: 55%; }
+.skeleton-line.medium { width: 75%; }
+.skeleton-line.price  { width: 40%; height: 18px; }
+
+.skeleton-img::after,
+.skeleton-line::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.15) 50%, transparent 100%);
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+
+/* ── TRUST BAR ── */
+.trust-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  padding: 2.5rem 2rem;
+  background: var(--trust-bg);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  font-size: .95rem;
+  color: var(--text-muted);
+}
+.trust-item svg {
+  width: 26px;
+  height: 26px;
+  stroke: var(--accent);
+  fill: none;
+  stroke-width: 1.8;
+  flex-shrink: 0;
+}
+.trust-item strong {
+  color: var(--text-primary);
+  display: block;
+  font-size: .98rem;
+  font-weight: 600;
+}
+.trust-item span { font-size: .83rem; }
+
+/* ── REVIEWS SECTION ── */
+.reviews-section {
+  padding: 4rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.reviews-section h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.2rem;
+  font-weight: 300;
+  text-align: center;
+  margin-bottom: .5rem;
+}
+.reviews-section p.sub {
+  text-align: center;
+  color: var(--text-muted);
+  margin-bottom: 2.5rem;
+  font-size: .95rem;
+}
+.rating-summary {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+  padding: 1.2rem 2rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  max-width: 400px;
+  margin: 0 auto 2.5rem;
+}
+.rating-big {
+  font-size: 3rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  line-height: 1;
+}
+.rating-details { text-align: left; }
+.rating-details .stars { color: #f5a623; font-size: 1.2rem; }
+.rating-details small { color: var(--text-muted); font-size: .82rem; }
+
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+.review-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: transform .2s;
+}
+.review-card:hover { transform: translateY(-3px); }
+.review-stars {
+  color: #f5a623;
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+  margin-bottom: .7rem;
+}
+.review-text {
+  font-size: .94rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+.review-author { display: flex; align-items: center; gap: .6rem; }
+.review-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--skeleton-base);
+}
+.review-name   { font-weight: 600; font-size: .88rem; }
+.review-date   { font-size: .78rem; color: var(--text-muted); }
+.review-verified {
+  font-size: .72rem;
+  color: #22c55e;
+  font-weight: 500;
+  margin-top: 1rem;
+}
+.review-product-tag {
+  display: inline-block;
+  font-size: .72rem;
+  background: var(--accent-light);
+  color: var(--accent);
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-bottom: .6rem;
+  font-weight: 500;
+}
+
+/* ── DELIVERY & RETURN POLICY ── */
+.info-sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 2rem 4rem;
+}
+@media (max-width: 768px) {
+  .info-sections { grid-template-columns: 1fr; }
+}
+.info-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 2rem;
+}
+.info-card h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.info-card h3 .icon { font-size: 1.3rem; }
+.info-card ul { list-style: none; padding: 0; }
+.info-card ul li {
+  padding: .55rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: .92rem;
+  color: var(--text-muted);
+  display: flex;
+  gap: .6rem;
+  align-items: flex-start;
+}
+.info-card ul li:last-child { border-bottom: none; }
+.info-card ul li::before {
+  content: '✓';
+  color: #22c55e;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── WHATSAPP FLOATING BUTTON ── */
+.whatsapp-float {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 9999;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #25D366;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 28px rgba(37, 211, 102, .45);
+  transition: transform .25s, box-shadow .25s;
+  text-decoration: none;
+  cursor: pointer;
+}
+.whatsapp-float:hover {
+  transform: scale(1.1) translateY(-3px);
+  box-shadow: 0 10px 36px rgba(37, 211, 102, .55);
+}
+.whatsapp-float svg { width: 30px; height: 30px; fill: #fff; }
+.whatsapp-tooltip {
+  position: absolute;
+  right: 68px;
+  background: #111;
+  color: #fff;
+  font-size: .82rem;
+  padding: 6px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+}
+.whatsapp-float:hover .whatsapp-tooltip { opacity: 1; }
+.whatsapp-pulse {
+  position: absolute;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: rgba(37, 211, 102, .4);
+  animation: wp-pulse 2s infinite;
+}
+@keyframes wp-pulse {
+  0%   { transform: scale(1);   opacity: .8; }
+  100% { transform: scale(1.7); opacity: 0;  }
+}
+
+/* ── RTL ADJUSTMENTS ── */
+[dir="rtl"] .whatsapp-float { right: auto; left: 28px; }
+[dir="rtl"] .whatsapp-tooltip { right: auto; left: 68px; }
+[dir="rtl"] .rating-details { text-align: right; }
+
+/* ============================================================
+   SECTION 2 — Product Detail Improvements
+   4. Image zoom (magnifier lens overlay + lightbox)
+   5. Size guide popup
+   6. You might also like
+============================================================ */
+
+/* ─────────────────────────────────────────
+   ④ IMAGE ZOOM
+   Strategy: zoom-result is a FIXED-position
+   panel that appears beside the modal on
+   large screens, and is hidden on smaller
+   screens where only the lightbox click works.
+───────────────────────────────────────── */
+
+/* The image wrapper — keep overflow:hidden so image is contained */
+.modal-img-main {
+  cursor: zoom-in;
+  position: relative; /* already set in styles.css — reinforcing */
+}
+
+/* Small lens indicator that follows the mouse */
+.zoom-lens {
+  display: none;
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border: 2px solid var(--accent);
+  background: rgba(201,169,110,0.1);
+  pointer-events: none;
+  z-index: 20;
+  box-sizing: border-box;
+}
+
+/* Zoomed result panel — fixed position, appears to the RIGHT of the viewport modal */
+.zoom-result {
+  display: none;
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 320px;
+  height: 380px;
+  background-repeat: no-repeat;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  pointer-events: none;
+  z-index: 9999;
+  /* position is set dynamically by JS */
+}
+
+/* Zoom hint badge */
+.zoom-hint {
+  position: absolute;
+  bottom: 0.55rem;
+  right: 0.55rem;
+  font-size: 0.85rem;
+  background: rgba(0,0,0,0.5);
+  color: white;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 5;
+}
+[dir="rtl"] .zoom-hint { right: auto; left: 0.55rem; }
+.modal-img-main:hover .zoom-hint { opacity: 1; }
+
+/* Hide lens + result on screens that can't fit the panel */
+@media (max-width: 1200px) {
+  .zoom-lens   { display: none !important; }
+  .zoom-result { display: none !important; }
+}
+
+/* ─────────────────────────────────────────
+   ④ LIGHTBOX
+───────────────────────────────────────── */
+
+.zoom-lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(6px);
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+}
+.zoom-lightbox.open { display: flex; }
+
+.zoom-lightbox img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  box-shadow: 0 0 80px rgba(0,0,0,0.7);
+  animation: lbAppear 0.22s ease;
+  pointer-events: none;
+}
+@keyframes lbAppear {
+  from { opacity: 0; transform: scale(0.93); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.zoom-lb-close {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.5rem;
+  color: rgba(255,255,255,0.65);
+  font-size: 2rem;
+  line-height: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.18s;
+  z-index: 1;
+}
+.zoom-lb-close:hover { color: #fff; }
+
+/* ─────────────────────────────────────────
+   ⑤ SIZE GUIDE — button + overlay
+───────────────────────────────────────── */
+
+/* Row that holds "Select Size" label + "Size Guide" link */
+.size-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+  gap: 0.5rem;
+}
+/* Remove the margin that .size-label originally added on its own */
+.size-label-row .size-label { margin-bottom: 0; }
+
+.size-guide-btn {
+  font-size: 0.72rem;
+  font-family: inherit;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+  transition: color 0.18s;
+  padding: 0;
+}
+.size-guide-btn:hover { color: var(--accent-dark); }
+.size-guide-btn::before { content: '📐'; font-style: normal; }
+
+/* Overlay backdrop */
+.size-guide-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  background: var(--modal-overlay);
+  backdrop-filter: blur(4px);
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.size-guide-overlay.open { display: flex; }
+
+/* Card */
+.size-guide-box {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 520px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.28s ease;
+}
+
+.size-guide-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.4rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.size-guide-head h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.35rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin: 0;
+}
+body[dir="rtl"] .size-guide-head h3 { font-family: 'Noto Kufi Arabic', sans-serif; }
+
+.size-guide-close {
+  width: 32px; height: 32px;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  transition: background 0.18s;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.size-guide-close:hover { background: var(--surface-alt); color: var(--text-primary); }
+
+.size-guide-body {
+  overflow-y: auto;
+  padding: 1.2rem 1.5rem 1.5rem;
+}
+
+/* Table */
+.size-guide-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  margin-bottom: 1rem;
+}
+.size-guide-table thead th {
+  text-align: left;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  font-weight: 600;
+  padding: 0.45rem 0.75rem;
+  border-bottom: 2px solid var(--border);
+}
+body[dir="rtl"] .size-guide-table thead th { text-align: right; letter-spacing: 0; }
+
+.size-guide-table td {
+  padding: 0.55rem 0.75rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+body[dir="rtl"] .size-guide-table td { text-align: right; }
+
+.size-guide-table tr.sg-row-alt td { background: var(--bg-secondary); }
+.size-guide-table tr:last-child td  { border-bottom: none; }
+
+.sg-size-cell {
+  font-weight: 700;
+  color: var(--accent) !important;
+  font-size: 0.88rem;
+}
+
+.size-guide-tip {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+  padding: 0.75rem 1rem;
+  background: var(--bg-secondary);
+  border-left: 3px solid var(--accent);
+  margin: 0;
+}
+[dir="rtl"] .size-guide-tip { border-left: none; border-right: 3px solid var(--accent); }
+
+/* ─────────────────────────────────────────
+   ⑥ YOU MIGHT ALSO LIKE
+───────────────────────────────────────── */
+
+.modal-related {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.modal-related-title {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 0.9rem;
+}
+body[dir="rtl"] .modal-related-title { letter-spacing: 0; }
+
+.modal-related-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
+}
+
+.related-card {
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  overflow: hidden;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.related-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+}
+
+.related-img-wrap {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+}
+.related-img-wrap img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  display: block;
+}
+.related-card:hover .related-img-wrap img { transform: scale(1.05); }
+
+.related-badge {
+  position: absolute;
+  top: 0.35rem; left: 0.35rem;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.4rem;
+  background: var(--accent);
+  color: white;
+}
+body[dir="rtl"] .related-badge { left: auto; right: 0.35rem; }
+.related-badge--out { background: var(--text-primary); color: var(--bg); }
+
+.related-info {
+  padding: 0.55rem 0.65rem 0.65rem;
+}
+.related-name {
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.35;
+  margin-bottom: 0.3rem;
+  /* clamp to 2 lines */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.related-price-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+.related-price-now {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+.related-price-old {
+  font-size: 0.7rem;
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+/* ============================================================
+   SECTION 3 — Mobile UX
+   7. Bottom nav bar (mobile only)
+   8. Swipeable category pills
+   9. Swipe gestures in modal gallery (handled in JS)
+============================================================ */
+
+/* ── 7. BOTTOM NAVIGATION BAR ── */
+.bottom-nav {
+  display: none; /* hidden on desktop */
+}
+
+@media (max-width: 768px) {
+  /* Push page content above the bottom nav */
+  body { padding-bottom: 68px; }
+
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 500;
+    background: var(--header-bg);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    height: 62px;
+    align-items: stretch;
+  }
+
+  .bn-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+    border: none;
+    background: none;
+    font-family: inherit;
+    transition: color 0.18s;
+    position: relative;
+  }
+  .bn-item.active, .bn-item:hover { color: var(--text-primary); }
+  .bn-item svg {
+    width: 22px; height: 22px;
+    stroke: currentColor; fill: none;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .bn-badge {
+    position: absolute; top: 8px; right: calc(50% - 18px);
+    background: var(--accent); color: white;
+    font-size: 0.55rem; font-weight: 700;
+    min-width: 16px; height: 16px;
+    border-radius: 8px; padding: 0 3px;
+    display: none; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+  .bn-badge.show { display: flex; }
+
+  /* Move WhatsApp button above bottom nav */
+  .whatsapp-float { bottom: 78px; }
+  [dir="rtl"] .whatsapp-float { bottom: 78px; }
+}
+
+/* ── 8. SWIPEABLE CATEGORY PILLS ── */
+@media (max-width: 768px) {
+  .categories {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+    /* Hide scrollbar */
+    scrollbar-width: none;
+  }
+  .categories::-webkit-scrollbar { display: none; }
+  .cat-pill {
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    white-space: nowrap;
+  }
+}
+
+/* ============================================================
+   SECTION 5 — UI Polish
+   14. Scroll progress bar
+   15. Category breadcrumb
+   16. Blur-up image placeholder
+   17. Back to top button
+============================================================ */
+
+/* ── 14. SCROLL PROGRESS BAR ── */
+#scroll-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), #e8c88a);
+  z-index: 9999;
+  transition: width 0.08s linear;
+  pointer-events: none;
+}
+
+/* ── 15. CATEGORY BREADCRUMB ── */
+#category-breadcrumb {
+  display: none;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  animation: fadeSlideIn 0.25s ease;
+}
+#category-breadcrumb.visible { display: flex; }
+#category-breadcrumb .bc-sep { opacity: 0.4; }
+#category-breadcrumb .bc-cat {
+  color: var(--accent);
+  font-weight: 600;
+  display: flex; align-items: center; gap: 0.3rem;
+}
+#category-breadcrumb .bc-clear {
+  margin-left: 0.3rem;
+  font-size: 0.68rem;
+  background: var(--border);
+  border: none;
+  color: var(--text-muted);
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s;
+}
+#category-breadcrumb .bc-clear:hover { background: var(--text-primary); color: var(--bg); }
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+[dir="rtl"] #category-breadcrumb {
+  animation-name: fadeSlideInRTL;
+}
+@keyframes fadeSlideInRTL {
+  from { opacity: 0; transform: translateX(6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── 16. BLUR-UP IMAGE PLACEHOLDER ── */
+.blur-img-wrap {
+  position: relative;
+  width: 100%; height: 100%;
+  overflow: hidden;
+}
+.blur-img-thumb {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  filter: blur(12px);
+  transform: scale(1.08);
+  transition: opacity 0.4s ease;
+  z-index: 1;
+}
+.blur-img-full {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 2;
+}
+.blur-img-full.loaded {
+  opacity: 1;
+}
+.blur-img-full.loaded + .blur-img-thumb,
+.blur-img-wrap.loaded .blur-img-thumb {
+  opacity: 0;
+}
+
+/* ── 17. BACK TO TOP BUTTON ── */
+#back-to-top {
+  position: fixed;
+  bottom: 28px;
+  left: 28px;
+  z-index: 400;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--text-primary);
+  color: var(--bg);
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s;
+  pointer-events: none;
+}
+#back-to-top.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+#back-to-top:hover {
+  background: var(--accent);
+}
+#back-to-top svg {
+  width: 18px; height: 18px;
+  stroke: currentColor; fill: none;
+  stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+}
+
+@media (max-width: 768px) {
+  /* On mobile, back-to-top sits above bottom nav */
+  #back-to-top { bottom: 78px; left: 16px; }
+}
+
+[dir="rtl"] #back-to-top { left: auto; right: 28px; }
+[dir="rtl"] #back-to-top { left: auto; right: 28px; }
+@media (max-width: 768px) {
+  [dir="rtl"] #back-to-top { right: 16px; left: auto; }
+}
+
+/* ── MOBILE MODAL SWIPE INDICATOR ── */
+.modal-swipe-hint {
+  display: none;
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+  letter-spacing: 0.04em;
+}
+@media (max-width: 768px) {
+  .modal-swipe-hint { display: block; }
+}

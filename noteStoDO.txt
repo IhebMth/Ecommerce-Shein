@@ -1,0 +1,35 @@
+SECTION 1 — Product Card UX
+
+Second image on card hover (use existing image index 1)
+Quick add to cart on card hover (size selector appears without opening modal)
+Stock urgency badge on card ("Only 2 left!" visible without opening modal)
+
+
+SECTION 2 — Product Detail Improvements
+4. Image zoom on hover/click
+5. Size guide popup with measurement chart
+6. "You might also like" — same category, 3-4 products shown at bottom of modal
+
+SECTION 3 — Mobile UX
+7. Bottom navigation bar (Home, Search, Cart, Wishlist) — fixed, mobile only
+8. Swipeable category pills on mobile
+9. Swipe gestures on product image gallery in modal
+
+SECTION 4 — Engagement & Retention
+10. Dismissible promo banner at top of page (saved in localStorage)
+11. Newsletter popup after 30 seconds (shows once, tracked in localStorage)
+12. Recently viewed products section (stored in localStorage)
+13. Countdown timer for a sale — configurable end date
+
+SECTION 5 — UI Polish
+14. Scroll progress bar at top of page
+15. Smooth category breadcrumb when filter is active
+16. Blur-up image placeholder (tiny placeholder shown while real image loads)
+17. "Back to top" button that appears on scroll
+
+SECTION 6 — Shareability & SEO
+18. Shareable URLs — category + product both reflected in URL params (you partially have product, add category)
+19. Share product button — copies link or opens native share sheet on mobile
+
+SECTION 7 — Analytics (zero backend)
+20. Google Analytics / Plausible integration — track add to cart, wishlist, checkout events
