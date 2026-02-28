@@ -8,11 +8,12 @@
     "create-admin": "node database/create-admin.js"
   },
   "dependencies": {
-    "better-sqlite3": "^9.4.3",
-    "jsonwebtoken": "^9.0.2",
-    "bcrypt": "^5.1.1",
     "@supabase/supabase-js": "^2.39.7",
     "@upstash/redis": "^1.28.4",
+    "bcrypt": "^5.1.1",
+    "better-sqlite3": "^9.4.3",
+    "dotenv": "^17.3.1",
+    "jsonwebtoken": "^9.0.2",
     "resend": "^3.2.0"
   },
   "devDependencies": {
