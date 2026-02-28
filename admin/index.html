@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NOVA Admin — Login</title>
+  <link rel="stylesheet" href="../admin/css/admin.css">
+  <style>
+    body {
+      display:         flex;
+      align-items:     center;
+      justify-content: center;
+      min-height:      100vh;
+      background:      var(--bg);
+    }
+
+    .login-card {
+      width:         100%;
+      max-width:     400px;
+      background:    var(--card-bg);
+      border:        1px solid var(--border);
+      border-radius: 12px;
+      padding:       40px 36px;
+      box-shadow:    var(--shadow);
+    }
+
+    .login-logo {
+      text-align:    center;
+      font-size:     36px;
+      font-weight:   700;
+      color:         var(--gold);
+      letter-spacing: 4px;
+      margin-bottom: 6px;
+    }
+
+    .login-subtitle {
+      text-align:    center;
+      color:         var(--text-muted);
+      font-size:     13px;
+      margin-bottom: 32px;
+    }
+
+    .login-card .form-group { margin-bottom: 18px; }
+
+    .password-wrap {
+      position: relative;
+    }
+
+    .password-wrap .form-control {
+      padding-right: 40px;
+    }
+
+    .eye-btn {
+      position:   absolute;
+      right:      10px;
+      top:        50%;
+      transform:  translateY(-50%);
+      background: none;
+      border:     none;
+      cursor:     pointer;
+      color:      var(--text-muted);
+      padding:    4px;
+      display:    flex;
+      align-items: center;
+    }
+
+    .eye-btn:hover { color: var(--text); }
+
+    .eye-btn svg {
+      width: 18px; height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .login-btn {
+      width:         100%;
+      padding:       11px;
+      background:    var(--gold);
+      color:         #1A1A2E;
+      border:        none;
+      border-radius: var(--radius);
+      font-size:     15px;
+      font-weight:   600;
+      cursor:        pointer;
+      transition:    background 0.2s;
+      margin-top:    6px;
+    }
+
+    .login-btn:hover:not(:disabled) { background: var(--gold-hover); }
+    .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    #error-msg {
+      display:       none;
+      margin-bottom: 16px;
+    }
+
+    #lockout-msg {
+      display:    none;
+      text-align: center;
+      margin-top: 12px;
+      color:      var(--warning);
+      font-size:  13px;
+    }
+
+    #countdown {
+      font-weight: 700;
+      color:       var(--danger);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-card">
+    <div class="login-logo">NOVA</div>
+    <div class="login-subtitle">Admin Dashboard</div>
+
+    <div id="error-msg" class="alert alert-error"></div>
+
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" class="form-control"
+             placeholder="admin@example.com" autocomplete="email">
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <div class="password-wrap">
+        <input type="password" id="password" class="form-control"
+               placeholder="Your password" autocomplete="current-password">
+        <button type="button" class="eye-btn" id="eye-btn" title="Show/hide password">
+          <svg id="eye-icon" viewBox="0 0 24 24">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <button class="login-btn" id="login-btn">Sign In</button>
+
+    <div id="lockout-msg">
+      Too many attempts. Try again in <span id="countdown"></span>
+    </div>
+  </div>
+
+  <script>
+    const emailEl    = document.getElementById('email');
+    const passwordEl = document.getElementById('password');
+    const loginBtn   = document.getElementById('login-btn');
+    const errorMsg   = document.getElementById('error-msg');
+    const lockoutMsg = document.getElementById('lockout-msg');
+    const countdown  = document.getElementById('countdown');
+    const eyeBtn     = document.getElementById('eye-btn');
+    const eyeIcon    = document.getElementById('eye-icon');
+
+    let countdownTimer = null;
+
+    /* ── Toggle password visibility ── */
+    eyeBtn.addEventListener('click', () => {
+      const isPassword = passwordEl.type === 'password';
+      passwordEl.type  = isPassword ? 'text' : 'password';
+      eyeIcon.innerHTML = isPassword
+        ? `<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
+           <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
+           <line x1="1" y1="1" x2="23" y2="23"/>`
+        : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+           <circle cx="12" cy="12" r="3"/>`;
+    });
+
+    /* ── Show error ── */
+    function showError(msg) {
+      errorMsg.textContent  = msg;
+      errorMsg.style.display = 'block';
+    }
+
+    function hideError() {
+      errorMsg.style.display = 'none';
+    }
+
+    /* ── Start lockout countdown ── */
+    function startLockout(minutes) {
+      let seconds = minutes * 60;
+      loginBtn.disabled      = true;
+      lockoutMsg.style.display = 'block';
+
+      function tick() {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        countdown.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+        if (seconds <= 0) {
+          clearInterval(countdownTimer);
+          loginBtn.disabled        = false;
+          lockoutMsg.style.display = 'none';
+          hideError();
+        }
+        seconds--;
+      }
+
+      tick();
+      countdownTimer = setInterval(tick, 1000);
+    }
+
+    /* ── Login handler ── */
+    async function doLogin() {
+      hideError();
+      const email    = emailEl.value.trim();
+      const password = passwordEl.value;
+
+      if (!email || !password) {
+        showError('Please enter your email and password.');
+        return;
+      }
+
+      loginBtn.disabled    = true;
+      loginBtn.textContent = 'Signing in…';
+
+      try {
+        const res  = await fetch('/api/auth/login', {
+          method:      'POST',
+          headers:     { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body:        JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (res.status === 429) {
+          /* Locked out */
+          showError('Too many failed attempts.');
+          startLockout(data.retryAfter || 15);
+          return;
+        }
+
+        if (!res.ok || !data.success) {
+          showError(data.error || 'Invalid credentials.');
+          return;
+        }
+
+        /* Success — redirect to dashboard */
+        window.location.href = '/admin/dashboard.html';
+
+      } catch (err) {
+        showError('Connection error. Please try again.');
+      } finally {
+        if (!loginBtn.disabled || countdownTimer) {
+          loginBtn.disabled    = false;
+          loginBtn.textContent = 'Sign In';
+        }
+      }
+    }
+
+    loginBtn.addEventListener('click', doLogin);
+
+    /* Allow Enter key to submit */
+    [emailEl, passwordEl].forEach(el => {
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter') doLogin();
+      });
+    });
+  </script>
+
+</body>
+</html>
