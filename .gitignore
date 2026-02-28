@@ -1,0 +1,32 @@
+# ============================================================
+# NOVA Store — .gitignore
+# Prevents secrets and local files from going to GitHub
+# ============================================================
+
+# ── SECRET KEYS — NEVER commit these ─────────────────────────
+.env
+
+# ── LOCAL DATABASE — stays on your machine only ──────────────
+database/nova.db
+database/nova.db-shm
+database/nova.db-wal
+
+# ── NODE MODULES — too large, reinstalled via npm install ────
+node_modules/
+
+# ── VERCEL LOCAL FILES ───────────────────────────────────────
+.vercel
+
+# ── OS JUNK FILES ────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── LOGS ─────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+
+# ── MISC ─────────────────────────────────────────────────────
+*.env.local
+*.env.development.local
+*.env.test.local
+*.env.production.local

@@ -1,0 +1,24 @@
+{
+  "name": "nova-store",
+  "version": "1.0.0",
+  "description": "NOVA — Bilingual EN/AR fashion e-commerce store",
+  "main": "index.js",
+  "scripts": {
+    "dev": "npx serve . -p 3000",
+    "create-admin": "node database/create-admin.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "bcrypt": "^5.1.1",
+    "@supabase/supabase-js": "^2.39.7",
+    "@upstash/redis": "^1.28.4",
+    "resend": "^3.2.0"
+  },
+  "devDependencies": {
+    "serve": "^14.2.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
