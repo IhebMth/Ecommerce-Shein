@@ -1,0 +1,328 @@
+# NOVA — Frontend Changes Guide
+### nova-store repo · 4 files change · connects to nova-backend API
+
+---
+
+## HOW FRONTEND CONNECTS TO BACKEND
+
+```
+nova-store (your public store)          nova-backend (your private API)
+──────────────────────────────          ────────────────────────────────
+Customer places order         ───POST──▶  /api/orders
+Store loads products          ───GET───▶  /api/products
+Reviews section loads         ───GET───▶  /api/reviews
+Newsletter form submits       ───POST──▶  /api/newsletter
+                                          /api/auth/login  (admin only)
+```
+
+The frontend never talks directly to Supabase.
+It only calls the nova-backend API endpoints.
+Cart, wishlist, language and theme all stay in localStorage — no backend needed.
+
+---
+
+## FILE STRUCTURE — WHAT CHANGES AND WHAT STAYS
+
+```
+nova-store/
+│
+├── index.html          ← CHANGES in Phase 3 (loads products from API)
+├── checkout.js         ← CHANGES in Phase 1 (sends orders to API)
+├── reviews.js          ← CHANGES in Phase 4 (loads reviews from API)
+├── engagement.js       ← CHANGES in Phase 4 (newsletter to API)
+│
+├── styles.css          ← untouched
+├── extras.css          ← untouched
+├── products.js         ← untouched (kept as fallback if API fails)
+├── shop.js             ← untouched
+├── modal.js            ← untouched
+├── cart.js             ← untouched
+├── analytics.js        ← untouched
+├── lang.js             ← untouched
+├── i18n.js             ← untouched
+├── darktheme.js        ← untouched
+├── trustbar.js         ← untouched
+├── infosections.js     ← untouched
+│
+├── .env.example        ← untouched
+├── .gitignore          ← untouched
+└── vercel.json         ← simple static version (no API routes)
+```
+
+**4 files change total. Everything else stays exactly as it is.**
+
+---
+
+## BEFORE YOU START — Set your API URL
+
+In your nova-store Vercel project, add one environment variable:
+```
+VITE_API_URL = https://nova-backend.vercel.app
+```
+
+In each fetch call the frontend uses this as the base URL.
+Actually since these are static HTML files, just hardcode your backend URL
+directly in the 4 files as a constant at the top — you will paste it in.
+
+---
+
+## MSG 1 — checkout.js (Phase 1 — after Orders API is built)
+
+**What changes:** `placeOrder()` sends order to `/api/orders` instead of EmailJS
+
+**When to do this:** After nova-backend Phase 1 Message 4 is done (orders API exists)
+
+**Paste to Claude:**
+```
+I am updating nova-store — the frontend for NOVA fashion store.
+The backend API is at: https://YOUR-NOVA-BACKEND.vercel.app
+(replace with your actual nova-backend Vercel URL)
+
+Update ONLY the placeOrder() function in checkout.js.
+Remove the emailjs.send() call completely.
+Replace with a fetch to the backend API:
+
+const BACKEND_URL = "https://YOUR-NOVA-BACKEND.vercel.app";
+
+const res = await fetch(BACKEND_URL + "/api/orders", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    name: name,
+    address: address,
+    phone: phone,
+    lang: currentLang,
+    cart: cart.map(item => ({
+      id: item.id,
+      name: item.productRef ? getName(item.productRef) : item.name,
+      price: item.price,
+      qty: item.qty,
+      size: item.size,
+      color: item.color
+    }))
+  })
+});
+const data = await res.json();
+if (!data.success) throw new Error(data.error || "Order failed");
+
+Keep the same success/error behavior that already exists.
+Do not change the form, validation, cart logic, or UI.
+Return the full updated checkout.js.
+```
+
+**Attach:** `checkout.js`
+
+**After:** Remove the EmailJS script tag from `index.html` (search for emailjs.com in the src attribute)
+
+**Commit message:** `feat: connect checkout to backend orders API`
+
+---
+
+## MSG 2 — index.html (Phase 3 — after Products API is built)
+
+**What changes:** `init()` loads products from `/api/products` instead of static array
+
+**When to do this:** After nova-backend Phase 2 Message 1 is done AND seed.sql has been run in Supabase
+
+**Paste to Claude:**
+```
+I am updating nova-store — the frontend for NOVA fashion store.
+The backend API is at: https://YOUR-NOVA-BACKEND.vercel.app
+
+In index.html, find the inline script at the bottom of the file.
+
+Step 1: Add the backend URL constant at the top of the inline script:
+  const BACKEND_URL = "https://YOUR-NOVA-BACKEND.vercel.app";
+
+Step 2: Rename the PRODUCTS array to PRODUCTS_STATIC
+  Change: const PRODUCTS = [...]
+  To: const PRODUCTS_STATIC = [...]
+  Change: let products = PRODUCTS
+  To: let products = PRODUCTS_STATIC
+
+Step 3: Add loadProducts() function before init():
+  async function loadProducts() {
+    try {
+      const res = await fetch(BACKEND_URL + "/api/products");
+      if (!res.ok) throw new Error("API error");
+      const data = await res.json();
+      // Convert flat API fields to nested format the frontend expects:
+      products = data.map(p => {
+        p.name = { en: p.name_en, ar: p.name_ar };
+        p.desc = { en: p.desc_en, ar: p.desc_ar };
+        p.oldPrice = p.old_price;
+        if (p.colors) {
+          p.colors = p.colors.map(c => {
+            c.name = { en: c.name_en, ar: c.name_ar };
+            c.images = c.images ? c.images.map(img => img.url) : [];
+            return c;
+          });
+        }
+        return p;
+      });
+      loadCart();
+    } catch(e) {
+      products = PRODUCTS_STATIC; // silent fallback
+    }
+    renderProducts();
+    blurUpObserve();
+    updateCartUI();
+    updateWishlistUI();
+  }
+
+Step 4: In init(), replace the renderProducts() call with: loadProducts()
+  Remove blurUpObserve(), updateCartUI(), updateWishlistUI() from init()
+  because loadProducts() calls them after fetch resolves.
+
+Change ONLY init() and add loadProducts() — touch nothing else.
+Return the complete updated index.html.
+```
+
+**Attach:** `index.html`
+
+**After:** Open your store, check DevTools console — no errors. Products should load from the database.
+
+**Commit message:** `feat: load products from backend API`
+
+---
+
+## MSG 3 — reviews.js (Phase 4 — after Reviews API is built)
+
+**What changes:** `renderReviews()` fetches from `/api/reviews`, falls back to static data
+
+**When to do this:** After nova-backend Phase 4 Message 1 is done
+
+**Paste to Claude:**
+```
+I am updating nova-store — the frontend for NOVA fashion store.
+The backend API is at: https://YOUR-NOVA-BACKEND.vercel.app
+
+Update reviews.js — change ONLY the renderReviews() function.
+Keep REVIEWS_DATA array as fallback.
+Keep renderStars() unchanged.
+
+Make renderReviews() async and add this at the start:
+
+const BACKEND_URL = "https://YOUR-NOVA-BACKEND.vercel.app";
+
+async function renderReviews() {
+  // keep existing heading/subtitle update code unchanged
+
+  let data = REVIEWS_DATA; // fallback
+  try {
+    const res = await fetch(BACKEND_URL + "/api/reviews");
+    if (res.ok) {
+      const fetched = await res.json();
+      if (Array.isArray(fetched) && fetched.length > 0) {
+        data = fetched;
+      }
+    }
+  } catch(e) { /* silent — use fallback */ }
+
+  // API returns: product_name_en, product_name_ar, stars, text_en, text_ar, author, created_at
+  // REVIEWS_DATA has: product:{en,ar}, stars, text:{en,ar}, name, avatar, date:{en,ar}
+  // Detect format and render both:
+
+  grid.innerHTML = data.map(r => {
+    const isApi = r.text_en !== undefined;
+    const product = isApi
+      ? (currentLang === "ar" ? r.product_name_ar : r.product_name_en)
+      : (r.product[currentLang] || r.product.en);
+    const text = isApi
+      ? (currentLang === "ar" ? r.text_ar : r.text_en)
+      : (r.text[currentLang] || r.text.en);
+    const author = isApi ? r.author : r.name;
+    const avatar = isApi
+      ? "https://i.pravatar.cc/150?u=" + encodeURIComponent(r.author)
+      : r.avatar;
+    const date = isApi
+      ? new Date(r.created_at).toLocaleDateString(
+          currentLang === "ar" ? "ar-TN" : "en-GB",
+          { year: "numeric", month: "long" })
+      : (r.date[currentLang] || r.date.en);
+
+    // use the same HTML card template that already exists in the file
+  }).join("");
+}
+
+Return the complete updated reviews.js.
+```
+
+**Attach:** `reviews.js`
+
+**After:** Submit a test review on the store → go to nova-backend.vercel.app/admin/reviews → approve it → refresh store — it should appear.
+
+**Commit message:** `feat: load reviews from backend API`
+
+---
+
+## MSG 4 — engagement.js (Phase 4 — after Newsletter API is built)
+
+**What changes:** Newsletter form submits to `/api/newsletter` instead of doing nothing
+
+**When to do this:** After nova-backend Phase 4 Message 2 is done
+
+**Paste to Claude:**
+```
+I am updating nova-store — the frontend for NOVA fashion store.
+The backend API is at: https://YOUR-NOVA-BACKEND.vercel.app
+
+In engagement.js, find the newsletter form submit handler.
+It is the event listener on the email input form.
+
+Add this constant at the top of the file (or near the submit handler):
+  const BACKEND_URL = "https://YOUR-NOVA-BACKEND.vercel.app";
+
+Replace the current submission logic with:
+  e.preventDefault();
+  const email = /* read the email value as it currently is */;
+  if (!email || !email.includes("@")) return;
+
+  fetch(BACKEND_URL + "/api/newsletter", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: email, lang: currentLang })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      // show the same success toast that already exists in the file
+    } else {
+      throw new Error();
+    }
+  })
+  .catch(() => {
+    // show the same error toast that already exists in the file
+  });
+
+Keep ALL other engagement.js code unchanged:
+  popup timing, sale banner, exit intent, all other functions.
+Return the complete updated engagement.js.
+```
+
+**Attach:** `engagement.js`
+
+**After:** Sign up for newsletter on store → check nova-backend.vercel.app/admin/newsletter — subscriber should appear.
+
+**Commit message:** `feat: connect newsletter form to backend API`
+
+---
+
+## FINAL CHECKS (after all 4 messages)
+
+1. Commit all 4 updated files to GitHub → Vercel auto-deploys nova-store
+2. Open store — products should load from database (check DevTools, no errors)
+3. Place a test order → check nova-backend.vercel.app/admin/orders — it should appear + email received
+4. Submit a test review → approve in admin/reviews → refresh store — appears
+5. Sign up for newsletter → check admin/newsletter — subscriber appears
+
+---
+
+## SUMMARY TABLE
+
+| Message | File | When | Backend dependency |
+|---|---|---|---|
+| MSG 1 | checkout.js | After Backend Phase 1-4 | Orders API live |
+| MSG 2 | index.html | After Backend Phase 2-2 | Products API + seed done |
+| MSG 3 | reviews.js | After Backend Phase 4-1 | Reviews API live |
+| MSG 4 | engagement.js | After Backend Phase 4-2 | Newsletter API live |

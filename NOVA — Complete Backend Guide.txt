@@ -1,0 +1,842 @@
+# NOVA — Complete Backend Guide
+### Separate repo · Node.js 24 · Supabase · Vercel · No SQLite
+
+---
+
+## WHY SEPARATE REPOS?
+
+| nova-store (frontend) | nova-backend (backend) |
+|---|---|
+| Public GitHub repo | Private GitHub repo |
+| Static files only | Node.js API + Admin panel |
+| Deployed on Vercel | Deployed on separate Vercel project |
+| yourstore.vercel.app | nova-backend.vercel.app/admin |
+| If hacked → store goes down | Admin panel stays safe |
+| No secrets, no DB access | All secrets live here only |
+
+> The frontend calls the backend API via fetch().
+> If someone finds a bug in your store, they cannot reach your admin panel
+> because it is on a completely different domain and deployment.
+
+---
+
+## FULL FILE STRUCTURE
+
+```
+nova-backend/                        ← your private GitHub repo
+│
+├── package.json                     ← Phase 0
+├── vercel.json                      ← Phase 0
+├── .env                             ← LOCAL ONLY never commit
+├── .env.example                     ← safe to commit
+├── .gitignore                       ← Phase 0
+│
+├── database/
+│   ├── schema.sql                   ← Phase 0 (already done)
+│   ├── seed.sql                     ← Phase 2
+│   └── create-admin.js              ← Phase 1
+│
+├── api/                             ← Vercel serverless functions
+│   ├── _lib/
+│   │   ├── db.js                    ← Phase 1 (Supabase only)
+│   │   ├── auth.js                  ← Phase 1
+│   │   ├── rate-limit.js            ← Phase 1
+│   │   └── cors.js                  ← Phase 5
+│   ├── auth/
+│   │   └── login.js                 ← Phase 1
+│   ├── orders/
+│   │   ├── index.js                 ← Phase 1
+│   │   └── [id].js                  ← Phase 1
+│   ├── products/
+│   │   ├── index.js                 ← Phase 2
+│   │   └── [id].js                  ← Phase 2
+│   ├── categories/
+│   │   └── index.js                 ← Phase 3
+│   ├── reviews/
+│   │   └── index.js                 ← Phase 4
+│   └── newsletter/
+│       └── index.js                 ← Phase 4
+│
+├── admin/                           ← Admin panel (protected)
+│   ├── index.html                   ← Phase 1 (login page)
+│   ├── dashboard.html               ← Phase 1
+│   ├── orders.html                  ← Phase 1
+│   ├── products.html                ← Phase 2
+│   ├── categories.html              ← Phase 3
+│   ├── reviews.html                 ← Phase 4
+│   ├── newsletter.html              ← Phase 4
+│   ├── css/
+│   │   └── admin.css                ← Phase 1
+│   └── js/
+│       ├── admin-auth.js            ← Phase 1
+│       ├── admin-orders.js          ← Phase 1
+│       ├── admin-products.js        ← Phase 2
+│       ├── admin-categories.js      ← Phase 3
+│       ├── admin-reviews.js         ← Phase 4
+│       └── admin-newsletter.js      ← Phase 4
+│
+└── supabase_rls.sql                 ← Phase 5
+```
+
+---
+
+## PHASE 0 — Setup
+
+### What you do yourself:
+1. Create a NEW GitHub repo called `nova-backend` — set it to **Private**
+2. Clone it to your PC: `git clone https://github.com/yourname/nova-backend`
+3. Node.js 24 is already installed — verify: `node --version` (should show v24.x.x)
+4. Your Supabase, Upstash, Resend accounts are already set up from before
+5. Create a NEW Vercel project linked to the `nova-backend` repo
+6. Add all 9 environment variables to this new Vercel project (see below)
+7. Add `.env.local` file locally with your real keys
+
+### Environment variables (add to nova-backend Vercel project):
+```
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_KEY=your-secret-key
+UPSTASH_REDIS_REST_URL=https://your-db.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your-token
+RESEND_API_KEY=re_your_key
+RESEND_TO_EMAIL=your@email.com
+ADMIN_SECRET=mX7$kP2@nQ9vR4wT6yU1zA3bC8dE5fG0
+JWT_SECRET=hJ4$sL9@oN6qW3eI8uY2xB7cF1gH5jK0
+ALLOWED_ORIGIN=https://your-nova-store.vercel.app
+```
+
+---
+
+### MSG 0-1 — package.json + vercel.json + .gitignore + .env.example
+
+**What Claude builds:**
+- `package.json` — dependencies, Node 24, scripts
+- `vercel.json` — routes API and admin, security headers, CORS
+- `.gitignore` — protects secrets
+- `.env.example` — variable names only, safe to commit
+
+**Paste to Claude:**
+```
+I am building NOVA — a bilingual EN/AR fashion e-commerce store.
+This is the nova-backend repo — a SEPARATE private repo from the frontend.
+It contains: Vercel serverless API functions + Admin panel HTML pages.
+Node.js version: 24.14.0
+Stack: Supabase PostgreSQL, Upstash Redis, Resend email, JWT auth.
+No SQLite — Supabase is used for both local dev and production.
+Admin panel is at /admin/ — protected by JWT cookie.
+API is at /api/ — serverless functions.
+Frontend store (nova-store) is on a separate domain and calls this API.
+
+Phase 0, Message 1.
+Generate 4 files:
+
+package.json:
+  name: nova-backend
+  engines: { node: "24.14.0" }
+  dependencies: jsonwebtoken, bcrypt, @supabase/supabase-js,
+                @upstash/redis, resend, dotenv
+  scripts:
+    dev: vercel dev
+    create-admin: node database/create-admin.js
+
+vercel.json:
+  Route /api/* to serverless functions
+  Route /admin/* to static admin HTML files
+  Route /admin to /admin/index.html
+  Security headers on all routes:
+    X-Frame-Options: DENY
+    X-Content-Type-Options: nosniff
+    Referrer-Policy: strict-origin-when-cross-origin
+    Permissions-Policy: camera=(), microphone=()
+  CORS headers allowing process.env.ALLOWED_ORIGIN for /api/* routes
+
+.gitignore:
+  .env, .env.local, node_modules/, .vercel, *.log, .DS_Store
+
+.env.example:
+  All 9 variable names with descriptions — no real values
+  Variables: SUPABASE_URL, SUPABASE_SERVICE_KEY,
+  UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN,
+  RESEND_API_KEY, RESEND_TO_EMAIL,
+  ADMIN_SECRET, JWT_SECRET, ALLOWED_ORIGIN
+
+Return all 4 files.
+```
+
+**After:** `npm install` then commit and push to GitHub
+
+---
+
+## PHASE 1 — Auth + Orders API + Admin Login + Dashboard + Orders Page
+
+### MSG 1-1 — api/_lib/ (db.js + auth.js + rate-limit.js)
+
+**What Claude builds:**
+- `api/_lib/db.js` — Supabase client wrapper, exports `getDB()`
+- `api/_lib/auth.js` — JWT cookie verifier, exports `verifyAdmin(req)`
+- `api/_lib/rate-limit.js` — Upstash Redis limiter, exports `rateLimit()`
+
+**Paste to Claude:**
+```
+Nova-backend. Node 24. No SQLite — Supabase everywhere.
+Phase 1, Message 1.
+
+Build 3 files in api/_lib/:
+
+api/_lib/db.js:
+  Uses @supabase/supabase-js
+  Reads SUPABASE_URL and SUPABASE_SERVICE_KEY from env
+  Export: getDB() — returns singleton Supabase client
+  Auth: { persistSession: false }
+
+api/_lib/auth.js:
+  Export: function verifyAdmin(req)
+  Read cookie "nova_admin_token" from req.headers.cookie
+  Verify with jwt.verify() using process.env.JWT_SECRET
+  Return decoded payload on success
+  Throw error with status 401 if missing or invalid
+
+api/_lib/rate-limit.js:
+  Export: async function rateLimit(ip, key, max, windowSec)
+  Use Upstash Redis REST API via fetch()
+  Use UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN
+  INCR key, set expiry on first request
+  Return { allowed: boolean, remaining: number }
+  If Redis fails: allow request (fail open), log error
+
+Return all 3 files.
+```
+
+---
+
+### MSG 1-2 — api/auth/login.js + database/create-admin.js
+
+**What Claude builds:**
+- `api/auth/login.js` — POST login, bcrypt check, JWT cookie, rate limit
+- `database/create-admin.js` — one-time script to create admin in Supabase
+
+**Paste to Claude:**
+```
+Nova-backend. Node 24. Supabase only.
+Phase 1, Message 2.
+Attach: api/_lib/db.js, api/_lib/rate-limit.js
+
+Build:
+
+api/auth/login.js — POST /api/auth/login:
+  Read { email, password } from req.body
+  Rate limit: 3 failures per IP per 15 minutes
+  Query admin_users table via getDB() for the email
+  bcrypt.compare() to verify password
+  On success: jwt.sign({ email, id }, JWT_SECRET, { expiresIn: "8h" })
+  Set HttpOnly cookie "nova_admin_token", Path=/, SameSite=Strict
+  Add Secure flag when NODE_ENV === production
+  Return { success: true }
+  On fail: 401 { error: "Invalid credentials" } — never reveal which field
+  On lockout: 429 { error: "Too many attempts", retryAfter: 15 }
+
+database/create-admin.js:
+  Usage: node database/create-admin.js email password
+  Load .env.local then .env using dotenv
+  Validate email format and password length >= 8
+  bcrypt.hash(password, 10)
+  Insert into admin_users via Supabase client
+  Handle duplicate email (code 23505) gracefully
+  Print success message with email on completion
+
+Return both files.
+```
+
+**After:** Run `node database/create-admin.js your@email.com YourPassword`
+
+---
+
+### MSG 1-3 — admin/css/admin.css + admin/index.html
+
+**What Claude builds:**
+- `admin/css/admin.css` — full dark theme CSS for all 7 admin pages
+- `admin/index.html` — login page with error display and lockout countdown
+
+**Paste to Claude:**
+```
+Nova-backend. Node 24.
+Phase 1, Message 3.
+Attach: api/auth/login.js
+
+Build:
+
+admin/css/admin.css — dark theme for all admin pages:
+  CSS variables: --bg #1A1A2E, --sidebar-bg #0D0D1A, --card-bg #2D2D44
+  --gold #C9A96E, --gold-hover #e0be8a, --text #E8E8F0
+  --text-muted #9090B0, --border #3D3D5C, --danger #E05555
+  --success #4CAF80, --warning #E0A030, --info #5090E0
+  Sidebar: 220px fixed left, logo at top, 7 nav links, logout at bottom
+  Active nav item: gold color + gold left border
+  Tables: striped rows, hover highlight
+  Status badges: pending=orange, accepted=blue, shipped=purple,
+    delivered=green, not_delivered=red, returned=gray
+  Buttons: .btn-primary (gold bg), .btn-danger (red), .btn-secondary (gray)
+  Forms: dark inputs, gold focus border
+  Cards, stat cards, tabs, pagination, toggle switch, slide panel
+  Responsive: sidebar becomes top bar on mobile (max-width 768px)
+
+admin/index.html — LOGIN PAGE (no sidebar, no admin-auth.js):
+  Centered card on dark background
+  NOVA logo in gold + "Admin Dashboard" subtitle
+  Email input + password input with show/hide eye toggle
+  Sign In button
+  Hidden error div — shown on failure
+  On 200 success: redirect to /admin/dashboard.html
+  On 429 lockout: show countdown timer "Try again in X:XX"
+  Inline JavaScript only — no external JS file
+
+Return both files.
+```
+
+**After:** Push to GitHub. Test login at your nova-backend.vercel.app/admin/
+
+---
+
+### MSG 1-4 — api/orders/index.js + api/orders/[id].js
+
+**What Claude builds:**
+- `api/orders/index.js` — GET (admin list) + POST (public order submission)
+- `api/orders/[id].js` — PATCH status + DELETE (admin only)
+
+**Paste to Claude:**
+```
+Nova-backend. Node 24. Supabase only.
+Phase 1, Message 4.
+Attach: api/_lib/db.js, api/_lib/auth.js, api/_lib/rate-limit.js
+
+Build:
+
+api/orders/index.js:
+
+GET /api/orders — requires verifyAdmin():
+  Query params: status, page (default 1), limit (default 20),
+    search (matches customer_name OR customer_phone OR order_number),
+    date_from, date_to
+  Use getDB().from("orders") with Supabase filters
+  Return { orders: [...], total, page, totalPages }
+
+POST /api/orders — PUBLIC (called by frontend store):
+  Rate limit: 5 per IP per hour
+  Body: { name, address, phone, cart: [{id,name,qty,size,color}], lang }
+  Validate: name/address/phone not empty, max 200 chars each
+  Validate: cart is array, not empty, each item has id and qty >= 1
+  Fetch product prices from products table — NEVER trust client price
+  Calculate total server-side
+  Generate order_number: "NOVA-" + 6 random digits
+  Insert into orders table: status="pending", items as JSON string
+  Send email via Resend to RESEND_TO_EMAIL with full order details
+  Return { success: true, orderId: order_number }
+
+api/orders/[id].js:
+
+PATCH — requires verifyAdmin():
+  Body: { status }
+  Validate status is one of: pending, accepted, shipped,
+    delivered, not_delivered, returned
+  Update orders table where id matches URL param
+  Return { success: true }
+
+DELETE — requires verifyAdmin():
+  Delete from orders where id matches URL param
+  Return { success: true }
+
+Return both files.
+```
+
+---
+
+### MSG 1-5 — admin/js/admin-auth.js + admin/dashboard.html
+
+**What Claude builds:**
+- `admin/js/admin-auth.js` — JWT check, getAuthHeaders(), logout() — used by all pages
+- `admin/dashboard.html` — stat cards, recent orders, low stock alerts
+
+**Paste to Claude:**
+```
+Nova-backend. Node 24.
+Phase 1, Message 5.
+Attach: admin/css/admin.css, api/orders/index.js
+
+Build:
+
+admin/js/admin-auth.js (included in ALL admin pages):
+  On DOMContentLoaded: check cookie "nova_admin_token" exists
+  If missing: window.location.href = "/admin/index.html"
+  Export window.getAuthHeaders = () => ({ "Authorization": "Bearer " + token })
+    where token is parsed from cookie
+  Export window.logout = () => {
+    delete cookie "nova_admin_token"
+    redirect to /admin/index.html
+  }
+
+admin/dashboard.html:
+  Include admin/css/admin.css and admin/js/admin-auth.js
+  Sidebar with links to all 7 pages + logout button
+  Page title: "Dashboard"
+  4 stat cards: Orders Today, Total Revenue, Pending Orders, Active Products
+  Status badges row: count per status fetched from GET /api/orders
+  Recent 10 orders mini-table: order#, customer, total, status, date
+  Low stock alerts: products where stock <= 5
+  All data fetched on load using getAuthHeaders()
+  Show loading spinner while fetching
+  Show error message if fetch fails
+
+Return both files.
+```
+
+---
+
+### MSG 1-6 — admin/orders.html + admin/js/admin-orders.js
+
+**What Claude builds:**
+- `admin/orders.html` — full orders management page
+- `admin/js/admin-orders.js` — all orders page logic
+
+**Paste to Claude:**
+```
+Nova-backend. Node 24.
+Phase 1, Message 6.
+Attach: admin/css/admin.css, admin/js/admin-auth.js,
+        api/orders/index.js, api/orders/[id].js
+
+Build admin/orders.html and admin/js/admin-orders.js:
+
+Tabs: All | Pending | Accepted | Shipped | Delivered | Not Delivered | Returned
+  Each tab shows count in parentheses
+Search bar: customer name, phone, or order number
+Date range: date_from and date_to inputs
+Table columns: checkbox, Order#, Customer Name, Phone,
+  Items summary, Total, Date, Status badge, Actions
+Click any row to expand — shows full details below:
+  Customer address
+  Each cart item: name, size, color, quantity, unit price
+Per-row actions:
+  Status dropdown + Save button → PATCH /api/orders/[id]
+  Delete button → confirm → DELETE /api/orders/[id]
+  Row updates in place, no full page reload
+Bulk action bar (appears when checkboxes are selected):
+  "X orders selected" + status dropdown + Apply
+  Loops through selected IDs, patches each
+Revenue total shown below table (sum of filtered results)
+Export CSV: all filtered orders
+  Columns: order_number, name, phone, address, items_summary, total, status, date
+Pagination: prev/next + "Page X of Y"
+
+Return both files.
+```
+
+---
+
+## PHASE 2 — Products API + Admin Products Page
+
+### MSG 2-1 — api/products/index.js + api/products/[id].js
+
+**Paste to Claude:**
+```
+Nova-backend. Node 24. Supabase only.
+Phase 2, Message 1.
+Attach: api/_lib/db.js, api/_lib/auth.js
+
+Build:
+
+api/products/index.js:
+
+GET /api/products — PUBLIC:
+  Return all active products with nested:
+    colors: [{ id, name_en, name_ar, hex, images: [{ url, sort_order }] }]
+    sizes: [{ size_label, stock }]
+  Query params: category (slug), search (name_en or name_ar),
+    sort (price-asc, price-desc, discount)
+  Use multiple Supabase queries and assemble nested structure
+
+POST /api/products — requires verifyAdmin():
+  Body: { name_en, name_ar, desc_en, desc_ar, category_id,
+    price, old_price, stock, active,
+    colors: [{ name_en, name_ar, hex, images: [url,...] }],
+    sizes: [{ size_label, stock }] }
+  Insert product, then colors, then images, then sizes
+  Return { success: true, productId }
+
+api/products/[id].js:
+
+PATCH — requires verifyAdmin():
+  Accept any subset of product fields
+  If colors provided: delete existing, insert new
+  If sizes provided: delete existing, insert new
+  Return { success: true }
+
+DELETE — requires verifyAdmin():
+  ?permanent=true: hard delete product and all related rows
+  default: set active=false (soft delete)
+  Return { success: true }
+
+Return both files.
+```
+
+---
+
+### MSG 2-2 — database/seed.sql
+
+**Paste to Claude:**
+```
+Nova-backend. Node 24.
+Phase 2, Message 2.
+Attach: products.js (from nova-store frontend), database/schema.sql
+
+Generate database/seed.sql:
+PostgreSQL syntax (for Supabase) — use INSERT ... ON CONFLICT DO NOTHING
+First insert all categories found in products.js
+Then for each product insert:
+  products row (name_en, name_ar, desc_en, desc_ar, price, old_price, stock, active, category_id)
+  product_colors rows
+  product_images rows (one per image URL with sort_order)
+  product_sizes rows (with stock from sizeStock if exists, else 0)
+Add comment above each product block with product name
+Return complete seed.sql.
+```
+
+**After:** Paste into Supabase SQL Editor → Run
+
+---
+
+### MSG 2-3 — admin/products.html + admin/js/admin-products.js
+
+**Paste to Claude:**
+```
+Nova-backend. Node 24.
+Phase 2, Message 3.
+Attach: admin/css/admin.css, admin/js/admin-auth.js,
+        api/products/index.js, api/products/[id].js
+
+Build admin/products.html and admin/js/admin-products.js:
+
+Products table:
+  Columns: thumbnail, name EN, category, price, old price, stock badge, active toggle, Edit, Delete
+  Stock badge: red=0, orange<=5, green otherwise
+  Active toggle: calls PATCH { active: bool } instantly
+  Search input + category dropdown filter
+  Add Product button → opens slide panel
+
+Slide panel (right side):
+  "Add Product" or "Edit Product" title
+  Name EN + Name AR inputs
+  Description EN + Description AR textareas
+  Category dropdown (loads from GET /api/categories)
+  Price + Old Price inputs
+  Total Stock input
+  Colors section: Add Color button creates rows with:
+    Name EN, Name AR, hex color picker, image URLs textarea (one per line)
+    Remove button per row
+  Sizes section: loads default sizes for selected category
+    Checkbox per size + stock input when checked
+  Active checkbox
+  Save + Cancel buttons
+
+Edit: populates panel with existing data → PATCH on save
+Delete: confirm → DELETE /api/products/[id]?permanent=true
+
+Return both files.
+```
+
+---
+
+## PHASE 3 — Categories API + Admin Categories
+
+### MSG 3-1 — api/categories/index.js
+
+**Paste to Claude:**
+```
+Nova-backend. Node 24. Supabase only.
+Phase 3, Message 1.
+Attach: api/_lib/db.js, api/_lib/auth.js
+
+Build api/categories/index.js:
+
+GET /api/categories — PUBLIC:
+  Return all categories with default_sizes array
+  Example: { id, name_en, name_ar, slug, default_sizes: ["S","M","L"] }
+
+POST — requires verifyAdmin():
+  Body: { name_en, name_ar, slug, default_sizes: [...] }
+  Insert category then insert each size into category_sizes
+
+PATCH ?id=X — requires verifyAdmin():
+  Update any provided fields
+  If default_sizes provided: delete existing, insert new
+
+DELETE ?id=X — requires verifyAdmin():
+  Check products with this category_id — if count > 0 return 400
+  Otherwise delete category_sizes then category
+
+Return the file.
+```
+
+---
+
+### MSG 3-2 — admin/categories.html + admin/js/admin-categories.js
+
+**Paste to Claude:**
+```
+Nova-backend. Node 24.
+Phase 3, Message 2.
+Attach: admin/css/admin.css, admin/js/admin-auth.js, api/categories/index.js
+
+Build admin/categories.html and admin/js/admin-categories.js:
+
+Section 1 — Categories table:
+  Columns: Name EN, Name AR, Slug, Product count, Edit, Delete
+  Edit: click → cells become inputs → Save/Cancel inline
+  Delete: disabled (with tooltip) if products exist in this category
+  Add row at bottom with 3 inputs + Add button
+
+Section 2 — Default Sizes per Category:
+  One row per category, shows current sizes as chips
+  Edit button → inline chip editor appears below row
+  Type size + Enter or comma → adds chip
+  Click X on chip → removes it
+  Save → PATCH /api/categories?id=X
+  Cancel → close and revert
+
+Return both files.
+```
+
+---
+
+## PHASE 4 — Reviews + Newsletter API + Admin Pages
+
+### MSG 4-1 — api/reviews/index.js
+
+**Paste to Claude:**
+```
+Nova-backend. Node 24. Supabase only.
+Phase 4, Message 1.
+Attach: api/_lib/db.js, api/_lib/auth.js, api/_lib/rate-limit.js
+
+Build api/reviews/index.js:
+
+GET — PUBLIC:
+  No admin JWT: return only verified=true rows ordered by created_at DESC
+  Valid admin JWT: return ALL rows
+  Optional query param: product_id
+
+POST — PUBLIC:
+  Rate limit: 1 per product_id per IP per 24 hours
+  Body: { product_id, stars, text_en, text_ar, author }
+  Validate: stars 1-5, text_en not empty, author not empty
+  Insert with verified=false
+  Return { success: true }
+
+PATCH ?id=X — requires verifyAdmin():
+  Update any of: verified, text_en, text_ar
+
+DELETE ?id=X — requires verifyAdmin()
+
+Return the file.
+```
+
+---
+
+### MSG 4-2 — api/newsletter/index.js
+
+**Paste to Claude:**
+```
+Nova-backend. Node 24. Supabase only.
+Phase 4, Message 2.
+Attach: api/_lib/db.js, api/_lib/auth.js, api/_lib/rate-limit.js
+
+Build api/newsletter/index.js:
+
+POST — PUBLIC:
+  Rate limit: 3 per IP per hour
+  Body: { email, lang }
+  Validate: email format (regex), lang must be "en" or "ar"
+  If email exists: return { success: true } silently (no error)
+  If new: insert into newsletter_subscribers
+  Return { success: true }
+
+GET — requires verifyAdmin():
+  Query params: search (email contains), lang, page, limit
+  Return { subscribers: [...], total }
+
+DELETE ?id=X — requires verifyAdmin():
+  Delete subscriber by id
+  Return { success: true }
+
+Return the file.
+```
+
+---
+
+### MSG 4-3 — admin/reviews.html + admin/js/admin-reviews.js
+
+**Paste to Claude:**
+```
+Nova-backend. Node 24.
+Phase 4, Message 3.
+Attach: admin/css/admin.css, admin/js/admin-auth.js, api/reviews/index.js
+
+Build admin/reviews.html and admin/js/admin-reviews.js:
+
+Fetch all reviews with admin JWT (gets all including unverified)
+Two tabs: "Pending (N)" and "Approved (N)"
+
+Each review card shows:
+  Gold star rating, reviewer name, date, product name
+  Text EN and Text AR both visible
+
+Pending tab actions:
+  Approve → PATCH { verified: true }
+  Edit → text fields become editable inputs
+  Save+Approve → PATCH { verified: true, text_en, text_ar }
+  Reject → confirm → DELETE
+
+Approved tab actions:
+  Hide → PATCH { verified: false } → moves to pending tab
+  Delete → confirm → DELETE
+
+Return both files.
+```
+
+---
+
+### MSG 4-4 — admin/newsletter.html + admin/js/admin-newsletter.js
+
+**Paste to Claude:**
+```
+Nova-backend. Node 24.
+Phase 4, Message 4.
+Attach: admin/css/admin.css, admin/js/admin-auth.js, api/newsletter/index.js
+
+Build admin/newsletter.html and admin/js/admin-newsletter.js:
+
+Stats row: Total | EN subscribers | AR subscribers
+Search input: live filter by email
+Language tabs: All / EN / AR
+Table: email, language, signup date, Delete button
+Delete: no confirm — DELETE /api/newsletter?id=X — remove row instantly
+Export CSV button: email, language, signup_date columns
+Pagination if over 50 results
+
+Return both files.
+```
+
+---
+
+## PHASE 5 — Security Hardening
+
+### MSG 5-1 — api/_lib/cors.js + update vercel.json
+
+**Paste to Claude:**
+```
+Nova-backend. Node 24.
+Phase 5, Message 1.
+Attach: vercel.json, api/orders/index.js
+
+Build api/_lib/cors.js:
+  Export setCORS(res, req):
+    Allowed origin: process.env.ALLOWED_ORIGIN
+    Headers: Access-Control-Allow-Origin, Allow-Methods (GET,POST,PATCH,DELETE,OPTIONS)
+    Allow-Headers: Content-Type, Authorization
+    Handle OPTIONS preflight: return 200 immediately
+    Return true if preflight was handled (so route can exit early)
+
+Update api/orders/index.js to call setCORS at the very top
+Show me the pattern — I will apply to other routes myself
+
+Return cors.js and the updated orders/index.js showing the pattern.
+```
+
+---
+
+### MSG 5-2 — supabase_rls.sql
+
+**Paste to Claude:**
+```
+Nova-backend. Node 24.
+Phase 5, Message 2.
+Attach: database/schema.sql
+
+Generate supabase_rls.sql with Row Level Security for all tables.
+Use PostgreSQL syntax for Supabase.
+
+For each table:
+  ALTER TABLE x ENABLE ROW LEVEL SECURITY;
+
+Policies:
+  orders: SELECT service_role only | INSERT allow all
+  products: SELECT allow all where active=true | write service_role only
+  categories: SELECT allow all | write service_role only
+  reviews: SELECT verified=true allow all, service_role sees all | INSERT allow all | write service_role only
+  newsletter_subscribers: INSERT allow all | SELECT/DELETE service_role only
+  admin_users: ALL service_role only
+  product_colors, product_images, product_sizes, category_sizes:
+    SELECT allow all | write service_role only
+
+Add comment explaining each policy.
+Return supabase_rls.sql.
+```
+
+**After:** Paste into Supabase SQL Editor → Run
+
+---
+
+### MSG 5-3 — Validation audit + SECURITY_CHECKLIST.md
+
+**Paste to Claude:**
+```
+Nova-backend. Node 24.
+Phase 5, Message 3.
+Attach: api/auth/login.js, api/orders/index.js, api/products/index.js,
+        api/reviews/index.js, api/newsletter/index.js
+
+Audit all 5 files for input validation:
+  Strings: not empty, max 200 chars
+  Numbers: is number, not negative, sensible range
+  Email: validate with regex
+  Enum fields: check against explicit allowed list
+  Arrays: is array, not empty, check each item
+
+Return fixed versions of any files that need changes.
+
+Also generate SECURITY_CHECKLIST.md:
+  All 9 Vercel env vars set on nova-backend project
+  ALLOWED_ORIGIN set to nova-store domain
+  RLS enabled and tested in Supabase
+  Admin account created with strong password
+  nova-backend repo is set to Private on GitHub
+  Test order placed and email received
+  Test review submitted, approved, visible on store
+  Newsletter signup tested
+  HTTPS confirmed on both Vercel deployments
+  .env never committed to GitHub
+  analytics.js debug: false in nova-store
+  Admin lockout tested (3 wrong passwords)
+```
+
+---
+
+## COMMIT MESSAGE GUIDE
+
+```
+Phase 0:  feat: initialize nova-backend project structure
+Phase 1a: feat: add Supabase db, auth, rate-limit utilities
+Phase 1b: feat: add admin login API and create-admin script
+Phase 1c: feat: add admin login page and CSS
+Phase 1d: feat: add orders API (GET, POST, PATCH, DELETE)
+Phase 1e: feat: add admin dashboard and auth helper
+Phase 1f: feat: add admin orders management page
+Phase 2a: feat: add products API
+Phase 2b: feat: add product seed data
+Phase 2c: feat: add admin products page
+Phase 3a: feat: add categories API
+Phase 3b: feat: add admin categories page
+Phase 4a: feat: add reviews API
+Phase 4b: feat: add newsletter API
+Phase 4c: feat: add admin reviews moderation page
+Phase 4d: feat: add admin newsletter page
+Phase 5:  feat: add CORS, RLS, security hardening
+```
