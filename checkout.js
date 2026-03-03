@@ -30,6 +30,8 @@ function closeCheckout() {
 }
 
 async function placeOrder() {
+  const BACKEND_URL = "https://nova-backend-one.vercel.app";
+
   const name    = document.getElementById('c-name').value.trim();
   const address = document.getElementById('c-address').value.trim();
   const phone   = document.getElementById('c-phone').value.trim();
@@ -41,24 +43,31 @@ async function placeOrder() {
   const btn = document.getElementById('place-order-btn');
   btn.disabled = true; btn.textContent = t('checkout.sending');
 
-  const total        = cart.reduce((s, i) => s + i.price * i.qty, 0);
-  const orderDetails = cart.map(i => {
-    const displayName = i.productRef ? getName(i.productRef) : i.name;
-    const colorPart   = i.color ? ` | Color: ${i.color}` : '';
-    return `• ${displayName} | Size: ${i.size}${colorPart} | Qty: ${i.qty} | ${fmt(i.price * i.qty)}`;
-  }).join('\n');
   const orderID = 'NOVA-' + Math.floor(100000 + Math.random() * 900000);
 
   try {
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      order_id:         orderID,
-      customer_name:    name,
-      customer_address: address,
-      customer_phone:   phone,
-      order_details:    orderDetails,
-      order_total:      fmt(total),
-      order_date:       new Date().toLocaleString()
+    const res = await fetch(BACKEND_URL + "/api/orders", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({
+        name:    name,
+        address: address,
+        phone:   phone,
+        lang:    currentLang,
+        cart:    cart.map(item => ({
+          id:    item.id,
+          name:  item.productRef ? getName(item.productRef) : item.name,
+          price: item.price,
+          qty:   item.qty,
+          size:  item.size,
+          color: item.color
+        }))
+      })
     });
+
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || "Order failed");
+
     cart = []; saveCart(); updateCartUI();
     document.getElementById('checkout-form-area').style.display = 'none';
     document.getElementById('checkout-success').style.display   = 'block';
