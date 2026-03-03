@@ -30,7 +30,7 @@ function closeCheckout() {
 }
 
 async function placeOrder() {
-  const BACKEND_URL = "https://nova-backend-one.vercel.app";
+  const BACKEND_URL = "https://nova-backend-iheb-meftahs-projects.vercel.app";
 
   const name    = document.getElementById('c-name').value.trim();
   const address = document.getElementById('c-address').value.trim();
