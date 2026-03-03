@@ -10,7 +10,7 @@
      const { data, error } = await db.from('orders').select('*');
 ============================================================ */
 
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 let _client = null;
 
@@ -34,4 +34,4 @@ function getDB() {
   return _client;
 }
 
-module.exports = { getDB };
+export default { getDB };

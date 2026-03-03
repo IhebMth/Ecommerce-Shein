@@ -14,7 +14,7 @@
      }
 ============================================================ */
 
-const jwt = require('jsonwebtoken');
+import { verify } from 'jsonwebtoken';
 
 function verifyAdmin(req) {
   /* ── Parse cookies from the Cookie header ── */
@@ -49,7 +49,7 @@ function verifyAdmin(req) {
   }
 
   try {
-    const decoded = jwt.verify(token, secret);
+    const decoded = verify(token, secret);
     return decoded; /* { email, id, iat, exp } */
   } catch (e) {
     const isExpired = e.name === 'TokenExpiredError';
@@ -61,4 +61,4 @@ function verifyAdmin(req) {
   }
 }
 
-module.exports = { verifyAdmin };
+export default { verifyAdmin };
