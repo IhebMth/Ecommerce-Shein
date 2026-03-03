@@ -1,0 +1,20 @@
+{
+  "name": "nova-backend",
+  "version": "1.0.0",
+  "description": "NOVA — Backend API + Admin Panel (private repo)",
+  "engines": {
+    "node": "24.14.0"
+  },
+  "scripts": {
+    "dev": "vercel dev",
+    "create-admin": "node database/create-admin.js"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2",
+    "bcrypt": "^5.1.1",
+    "@supabase/supabase-js": "^2.39.7",
+    "@upstash/redis": "^1.28.4",
+    "resend": "^3.2.0",
+    "dotenv": "^16.4.5"
+  }
+}
