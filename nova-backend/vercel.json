@@ -33,7 +33,7 @@
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",
-          "value": "https://REPLACE_WITH_YOUR_STORE_DOMAIN"
+          "value": "https://enova-store.vercel.app/"
         },
         {
           "key": "Access-Control-Allow-Methods",
