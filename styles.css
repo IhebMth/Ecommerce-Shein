@@ -77,11 +77,8 @@
 
 /* ── TRANSITION FOR THEME SWITCH ── */
 *, *::before, *::after {
-  transition:
-    background-color 0.35s ease,
-    border-color 0.35s ease,
-    color 0.25s ease,
-    box-shadow 0.35s ease;
+  transition: background-color 0.35s, border-color 0.35s, 
+              color 0.25s, box-shadow 0.35s;
   margin: 0; padding: 0; box-sizing: border-box;
 }
 /* But NOT layout/transform transitions — causes lag */
@@ -605,9 +602,8 @@ body[dir="rtl"] .wish-head h2 { font-family: 'Noto Kufi Arabic', sans-serif; }
 
 /* ── CHECKOUT ── */
 .checkout-overlay {
-  display: none; position: fixed; inset: 0; z-index: 400;
-  background: var(--modal-overlay); backdrop-filter: blur(4px);
-  align-items: center; justify-content: center; padding: 1rem;
+    display: none; position: fixed; inset: 0; z-index: 400;
+
 }
 .checkout-overlay.open { display: flex; }
 .checkout-box {

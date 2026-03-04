@@ -882,4 +882,4 @@ body[dir="rtl"] .related-badge { left: auto; right: 0.35rem; }
 }
 @media (max-width: 768px) {
   .modal-swipe-hint { display: block; }
-}
+    }
