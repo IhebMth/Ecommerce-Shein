@@ -603,7 +603,9 @@ body[dir="rtl"] .wish-head h2 { font-family: 'Noto Kufi Arabic', sans-serif; }
 /* ── CHECKOUT ── */
 .checkout-overlay {
     display: none; position: fixed; inset: 0; z-index: 400;
-
+    align-items: center; justify-content: center;
+    background: var(--modal-overlay); backdrop-filter: blur(4px);
+    padding: 1rem;
 }
 .checkout-overlay.open { display: flex; }
 .checkout-box {
