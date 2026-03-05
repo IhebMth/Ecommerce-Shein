@@ -746,7 +746,7 @@ async function loadProducts() {
     const res = await fetch(BACKEND_URL + "/api/products");
     if (!res.ok) throw new Error("API error " + res.status);
     const data = await res.json();
-    products = data.map(p => {
+    products = (data.products ?? data).map(p => {
       p.name     = { en: p.name_en,  ar: p.name_ar  };
       p.desc     = { en: p.desc_en,  ar: p.desc_ar  };
       p.oldPrice = p.old_price;
