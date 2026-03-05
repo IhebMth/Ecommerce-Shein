@@ -1,4 +1,4 @@
-const PRODUCTS = [
+const PRODUCTS_STATIC = [
   {
     id: 'acc-001',
     name: { en: 'Golden Chain Necklace', ar: 'قلادة سلسلة ذهبية' },

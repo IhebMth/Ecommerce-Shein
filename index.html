@@ -436,6 +436,8 @@
 <script src="engagement.js"></script>
 <script src="analytics.js"></script>
 <script>
+const BACKEND_URL = "https://nova-backend-one.vercel.app";
+
 /* ── EMAILJS ── */
 const EMAILJS_SERVICE_ID  = 'service_9x2l0cl';
 const EMAILJS_TEMPLATE_ID = 'template_xgwftzp';
@@ -443,7 +445,7 @@ const EMAILJS_PUBLIC_KEY  = 'Z5bnNfX8i2DocKic6';
 emailjs.init(EMAILJS_PUBLIC_KEY);
 
 /* ── STATE ── */
-let products         = PRODUCTS;
+let products         = PRODUCTS_STATIC;
 let i18n             = I18N;
 let cart             = [];
 let wishlist         = [];
@@ -739,6 +741,36 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 /* ── INIT ── */
+async function loadProducts() {
+  try {
+    const res = await fetch(BACKEND_URL + "/api/products");
+    if (!res.ok) throw new Error("API error " + res.status);
+    const data = await res.json();
+    products = data.map(p => {
+      p.name     = { en: p.name_en,  ar: p.name_ar  };
+      p.desc     = { en: p.desc_en,  ar: p.desc_ar  };
+      p.oldPrice = p.old_price;
+      if (p.colors) {
+        p.colors = p.colors.map(c => {
+          c.name   = { en: c.name_en, ar: c.name_ar };
+          c.images = c.images ? c.images.map(img => img.url) : [];
+          return c;
+        });
+      }
+      p.sizes = p.sizes ? p.sizes.map(s => s.size_label) : [];
+      return p;
+    });
+    loadCart();
+  } catch(e) {
+    console.warn('[NOVA] API failed, using static products:', e.message);
+    products = PRODUCTS_STATIC;
+  }
+  renderProducts();
+  if (typeof blurUpObserve === 'function') blurUpObserve();
+  updateCartUI();
+  updateWishlistUI();
+}
+
 function init() {
   currentLang = loadLang();
   const html = document.documentElement;
@@ -772,10 +804,7 @@ function init() {
     );
   }
 
-  renderProducts();
-  blurUpObserve();
-  updateCartUI();
-  updateWishlistUI();
+  loadProducts();
   updateBreadcrumb();
   updateScrollProgress();
   updateBackToTop();
