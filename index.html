@@ -746,18 +746,30 @@ async function loadProducts() {
     const res = await fetch(BACKEND_URL + "/api/products");
     if (!res.ok) throw new Error("API error " + res.status);
     const data = await res.json();
+
+    /* Fetch categories to map category_id → name */
+    let catMap = {};
+    try {
+      const catRes  = await fetch(BACKEND_URL + "/api/categories");
+      const catData = await catRes.json();
+      const catList = catData.categories ?? catData ?? [];
+      catList.forEach(c => { catMap[c.id] = c.name_en; });
+    } catch(e) { /* non-fatal */ }
+
     products = (data.products ?? data).map(p => {
+      p.id       = String(p.id);                          // normalise to string
       p.name     = { en: p.name_en,  ar: p.name_ar  };
       p.desc     = { en: p.desc_en,  ar: p.desc_ar  };
       p.oldPrice = p.old_price;
+      p.category = catMap[p.category_id] ?? 'Other';     // map id → name
       if (p.colors) {
         p.colors = p.colors.map(c => {
           c.name   = { en: c.name_en, ar: c.name_ar };
-          c.images = c.images ? c.images.map(img => img.url) : [];
+          c.images = c.images ? c.images.map(img => typeof img === 'string' ? img : img.url) : [];
           return c;
         });
       }
-      p.sizes = p.sizes ? p.sizes.map(s => s.size_label) : [];
+      p.sizes = p.sizes ? p.sizes.map(s => typeof s === 'string' ? s : s.size_label) : [];
       return p;
     });
     loadCart();
