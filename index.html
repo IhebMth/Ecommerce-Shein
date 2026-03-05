@@ -66,7 +66,7 @@
       "@type": "Store",
       "name": "NOVA Fashion",
       "url": "https://novafashion.store/",
-      "currenciesAccepted": "USD",
+      "currenciesAccepted": "TND",
       "paymentAccepted": "Cash on Delivery",
       "priceRange": "$$",
       "hasOfferCatalog": {
@@ -457,7 +457,7 @@ let currentSort      = 'default';
 const cardColorState = {};
 
 /* ── UTILITIES ── */
-const fmt = price => `$${price.toFixed(2)}`;
+const fmt = price => `${price.toFixed(2)} TND`;
 
 function t(key, vars = {}) {
   let str = (i18n[currentLang]?.[key]) || (i18n['en']?.[key]) || key;
@@ -506,7 +506,11 @@ function loadCart() {
   try {
     const raw = localStorage.getItem('nova_cart');
     if (!raw) return;
-    cart = JSON.parse(raw).map(item => ({ ...item, productRef: products.find(p => p.id === item.id) || null }));
+    cart = JSON.parse(raw).map(item => ({
+        ...item,
+        /* match by string OR integer id — works with old hardcoded data and new API integers */
+        productRef: products.find(p => String(p.id) === String(item.id)) || null
+      }));
   } catch(e) { cart = []; }
 }
 function saveWishlist() {
