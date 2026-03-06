@@ -104,6 +104,19 @@ const I18N = {
     'reviews.sub':      'Real reviews from real people who love NOVA',
     'reviews.basedOn':  'Based on 247 reviews',
     'reviews.verified': 'Verified Purchase',
+    /* review form */
+    'reviewform.heading':   'Share Your Experience',
+    'reviewform.sub':       'Your opinion matters — help other customers choose with confidence',
+    'reviewform.starLabel': 'Your rating',
+    'reviewform.namePH':    'Your name',
+    'reviewform.productPH': 'Product name',
+    'reviewform.textPH':    'Tell us about your experience with the product...',
+    'reviewform.submit':    'Submit Review',
+    'reviewform.sending':   'Sending...',
+    'reviewform.ok':        '✓ Thank you! Your review will be published after moderation.',
+    'reviewform.errStars':  'Please select a star rating.',
+    'reviewform.errEmpty':  'Please fill in your name and review.',
+    'reviewform.errFail':   'Something went wrong. Please try again.',
 
     /* delivery info */
     'info.delivery.title': 'Delivery Information',
@@ -229,6 +242,19 @@ const I18N = {
     'reviews.sub':      'تقييمات حقيقية من أشخاص يحبون NOVA',
     'reviews.basedOn':  'بناءً على ٢٤٧ تقييماً',
     'reviews.verified': 'شراء موثق',
+    /* review form */
+    'reviewform.heading':   'شاركينا تجربتك',
+    'reviewform.sub':       'رأيك يهمنا — ساعدي العملاء الأخريات في الاختيار',
+    'reviewform.starLabel': 'تقييمك',
+    'reviewform.namePH':    'اسمك',
+    'reviewform.productPH': 'اسم المنتج',
+    'reviewform.textPH':    'شاركينا تجربتك مع المنتج...',
+    'reviewform.submit':    'إرسال التقييم',
+    'reviewform.sending':   'جاري الإرسال...',
+    'reviewform.ok':        '✓ شكراً! سيتم مراجعة تقييمك قبل نشره.',
+    'reviewform.errStars':  'يرجى اختيار تقييم بالنجوم.',
+    'reviewform.errEmpty':  'يرجى ملء اسمك ونص التقييم.',
+    'reviewform.errFail':   'حدث خطأ، يرجى المحاولة مجدداً.',
 
     /* delivery info */
     'info.delivery.title': 'معلومات التوصيل',

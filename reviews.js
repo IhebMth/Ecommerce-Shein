@@ -154,20 +154,18 @@ function renderReviewForm() {
   const dir  = isAr ? 'rtl' : 'ltr';
 
   const L = {
-    heading:   isAr ? 'شاركينا تجربتك'    : 'Share Your Experience',
-    sub:       isAr ? 'رأيك يهمنا — ساعدي العملاء الأخريات في الاختيار'
-                    : 'Your opinion matters — help other customers choose with confidence',
-    namePH:    isAr ? 'اسمك'              : 'Your name',
-    productPH: isAr ? 'اسم المنتج'        : 'Product name',
-    textPH:    isAr ? 'شاركينا تجربتك مع المنتج...' : 'Tell us about your experience...',
-    starLabel: isAr ? 'تقييمك'            : 'Your rating',
-    submit:    isAr ? 'إرسال التقييم'     : 'Submit Review',
-    sending:   isAr ? 'جاري الإرسال...'  : 'Sending...',
-    ok:        isAr ? '✓ شكراً! سيتم مراجعة تقييمك قبل نشره.'
-                    : '✓ Thank you! Your review will be published after moderation.',
-    errEmpty:  isAr ? 'يرجى ملء اسمك ونص التقييم.' : 'Please fill in your name and review.',
-    errStars:  isAr ? 'يرجى اختيار تقييم بالنجوم.' : 'Please select a star rating.',
-    errFail:   isAr ? 'حدث خطأ، يرجى المحاولة مجدداً.' : 'Something went wrong. Please try again.',
+    heading:   t('reviewform.heading'),
+    sub:       t('reviewform.sub'),
+    namePH:    t('reviewform.namePH'),
+    productPH: t('reviewform.productPH'),
+    textPH:    t('reviewform.textPH'),
+    starLabel: t('reviewform.starLabel'),
+    submit:    t('reviewform.submit'),
+    sending:   t('reviewform.sending'),
+    ok:        t('reviewform.ok'),
+    errEmpty:  t('reviewform.errEmpty'),
+    errStars:  t('reviewform.errStars'),
+    errFail:   t('reviewform.errFail'),
   };
 
   const wrap = document.createElement('div');
