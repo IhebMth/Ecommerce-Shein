@@ -783,7 +783,7 @@ async function loadProducts() {
   updateWishlistUI();
 }
 
-function init() {
+async function init() {
   currentLang = loadLang();
   const html = document.documentElement;
   if (currentLang === 'ar') {
@@ -800,7 +800,7 @@ function init() {
   applyTranslations();
   try { renderTrustBar(); }    catch(e) { console.warn('renderTrustBar missing', e); }
   try { renderInfoSections(); } catch(e) { console.warn('renderInfoSections missing', e); }
-  try { renderReviews(); }     catch(e) { console.warn('renderReviews missing', e); }
+  try { await renderReviews(); }     catch(e) { console.warn('renderReviews missing', e); }
   try { renderWhatsApp(); }    catch(e) { console.warn('renderWhatsApp missing', e); }
 
   /* Patch after all modules loaded */
