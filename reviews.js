@@ -145,7 +145,9 @@ async function renderReviews() {
    Injected once below #reviews-section
 ══════════════════════════════════════════════════════════ */
 function renderReviewForm() {
-  if (document.getElementById('nova-review-form-wrap')) return;
+  /* Remove existing form so it re-renders with the current language */
+  const existing = document.getElementById('nova-review-form-wrap');
+  if (existing) existing.remove();
 
   const section = document.getElementById('reviews-section');
   if (!section) return;
