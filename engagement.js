@@ -49,6 +49,15 @@
    ① CONFIGURATION — edit these objects only
 ══════════════════════════════════════════════════════════ */
 
+/*  ══════════════════════════════════════════════════════════
+   Popup and banner configs — edit text, timing, and toggle features
+   ══════════════════════════════════════════════════════════
+   
+   Popup shows at 20s, re-shows every 5 min if not subscribed. 
+   Clicking X doesn't permanently lock it. 
+   Shows "You're already subscribed" if duplicate email
+   */
+
 const PROMO_CONFIG = {
   active: true,
 
@@ -70,8 +79,11 @@ const PROMO_CONFIG = {
 const NEWSLETTER_CONFIG = {
   active: true,
 
-  /* ✏️ Delay in milliseconds before popup appears */
-  delayMs: 20000,   /* 10 seconds */
+  /* First appearance: 20 seconds after page load */
+  delayMs: 20000,
+
+  /* Re-show every 5 minutes if not yet subscribed */
+  repeatMs: 5 * 60 * 1000,
 
   heading: {
     en: 'Join the NOVA Family 💌',
@@ -241,6 +253,8 @@ function _updatePromoBanner() {
 ══════════════════════════════════════════════════════════ */
 function initNewsletterPopup() {
   if (!NEWSLETTER_CONFIG.active) return;
+
+  /* Only skip if user already successfully subscribed */
   try {
     if (localStorage.getItem(NEWSLETTER_CONFIG.storageKey)) return;
   } catch(e) {}
@@ -365,7 +379,19 @@ function initNewsletterPopup() {
 
   function _closeNl() {
     overlay.classList.remove('open');
-    try { localStorage.setItem(NEWSLETTER_CONFIG.storageKey, '1'); } catch(e) {}
+    /* Don't lock permanently — re-show after repeatMs if not subscribed */
+    try {
+      if (!localStorage.getItem(NEWSLETTER_CONFIG.storageKey)) {
+        setTimeout(() => {
+          try {
+            if (!localStorage.getItem(NEWSLETTER_CONFIG.storageKey)) {
+              overlay.classList.add('open');
+              _fillNl();
+            }
+          } catch(e) {}
+        }, NEWSLETTER_CONFIG.repeatMs);
+      }
+    } catch(e) {}
   }
 
   document.getElementById('nl-close').addEventListener('click', _closeNl);
@@ -392,6 +418,29 @@ function initNewsletterPopup() {
         body:    JSON.stringify({ email, lang: _lang() }),
       });
       const apiData = await apiRes.json();
+
+      /* Already subscribed — tell them and lock popup */
+      if (apiData.already) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = _t(NEWSLETTER_CONFIG.btnLabel);
+        document.getElementById('nl-form').style.display = 'none';
+        const successEl = document.getElementById('nl-success');
+        const isAr = _lang() === 'ar';
+        successEl.innerHTML = `
+          <div style="text-align:center;padding:1rem 0">
+            <div style="font-size:2rem;margin-bottom:0.5rem">💌</div>
+            <p style="font-weight:600;margin-bottom:0.3rem">
+              ${isAr ? 'أنت مشترك بالفعل!' : "You're already subscribed!"}
+            </p>
+            <p style="font-size:0.82rem;color:var(--text-muted)">
+              ${isAr ? 'بريدك الإلكتروني موجود بالفعل في قائمتنا 🎉' : 'Your email is already on our list 🎉'}
+            </p>
+          </div>`;
+        successEl.style.display = 'block';
+        try { localStorage.setItem(NEWSLETTER_CONFIG.storageKey, '1'); } catch(e) {}
+        return;
+      }
+
       if (!apiRes.ok && !apiData.success) throw new Error(apiData.error || 'Subscribe failed');
     } catch(err) {
       /* Non-fatal — show success anyway (UX) but log it */
@@ -442,8 +491,16 @@ function initNewsletterPopup() {
     submitBtn.textContent = _t(NEWSLETTER_CONFIG.btnLabel);
   });
 
-  /* Show after delay */
-  setTimeout(() => overlay.classList.add('open'), NEWSLETTER_CONFIG.delayMs);
+  /* Show after initial delay (20s) */
+  setTimeout(() => {
+    try {
+      if (!localStorage.getItem(NEWSLETTER_CONFIG.storageKey)) {
+        overlay.classList.add('open');
+      }
+    } catch(e) {
+      overlay.classList.add('open');
+    }
+  }, NEWSLETTER_CONFIG.delayMs);
 }
 
 /* ══════════════════════════════════════════════════════════
