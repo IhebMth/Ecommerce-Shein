@@ -383,25 +383,23 @@ function initNewsletterPopup() {
     submitBtn.disabled = true;
     submitBtn.textContent = _lang() === 'ar' ? 'جارٍ...' : 'Sending…';
 
+    /* Subscribe via backend API */
+    try {
+      const backendUrl = (typeof BACKEND_URL !== 'undefined') ? BACKEND_URL : '';
+      const apiRes = await fetch(backendUrl + '/api/newsletter', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email, lang: _lang() }),
+      });
+      const apiData = await apiRes.json();
+      if (!apiRes.ok && !apiData.success) throw new Error(apiData.error || 'Subscribe failed');
+    } catch(err) {
+      /* Non-fatal — show success anyway (UX) but log it */
+      console.warn('[NOVA] Newsletter API error:', err.message);
+    }
+
     /* Generate a unique 10% discount code */
     const code = 'NOVA10-' + Math.random().toString(36).substring(2, 7).toUpperCase();
-
-    /* Send notification email to admin via EmailJS */
-    try {
-      if (typeof emailjs !== 'undefined' && typeof EMAILJS_SERVICE_ID !== 'undefined') {
-        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-          order_id:         'NEWSLETTER',
-          customer_name:    'Newsletter Subscriber',
-          customer_address: email,
-          customer_phone:   'N/A',
-          order_details:    `New newsletter signup\nEmail: ${email}\nDiscount code issued: ${code}`,
-          order_total:      '10% OFF — Code: ' + code,
-          order_date:       new Date().toLocaleString()
-        });
-      }
-    } catch(err) {
-      console.warn('[NOVA] Admin email failed:', err);
-    }
 
     /* Hide form, show beautiful success message with the code */
     document.getElementById('nl-form').style.display = 'none';
