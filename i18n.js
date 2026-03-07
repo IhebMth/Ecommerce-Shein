@@ -118,8 +118,14 @@ const I18N = {
     'reviewform.errEmpty':  'Please fill in your name and review.',
     'reviewform.errFail':   'Something went wrong. Please try again.',
 
+    /* modal product reviews */
+    'modalReview.title':     'Customer Reviews',
+    'modalReview.noReviews': 'No reviews yet — be the first!',
+    'modalReview.writeTitle':'Write a Review',
+    'modalReview.namePH':    'Your name',
+    'modalReview.textPH':    'Share your experience…',
+
     /* delivery info */
-    'info.delivery.title': 'Delivery Information',
     'info.delivery.1': 'Standard delivery: 2–5 business days',
     'info.delivery.2': 'Express delivery available at checkout',
     'info.delivery.3': 'Cash on Delivery — pay when your order arrives',
@@ -255,6 +261,13 @@ const I18N = {
     'reviewform.errStars':  'يرجى اختيار تقييم بالنجوم.',
     'reviewform.errEmpty':  'يرجى ملء اسمك ونص التقييم.',
     'reviewform.errFail':   'حدث خطأ، يرجى المحاولة مجدداً.',
+
+    /* modal product reviews */
+    'modalReview.title':     'تقييمات العملاء',
+    'modalReview.noReviews': 'لا توجد تقييمات بعد — كوني أول من يقيّم!',
+    'modalReview.writeTitle':'اكتبي تقييمك',
+    'modalReview.namePH':    'اسمك',
+    'modalReview.textPH':    'شاركينا تجربتك…',
 
     /* delivery info */
     'info.delivery.title': 'معلومات التوصيل',
