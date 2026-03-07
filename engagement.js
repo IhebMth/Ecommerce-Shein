@@ -423,11 +423,10 @@ function initNewsletterPopup() {
           <div style="text-align:center;padding:1rem 0">
             <div style="font-size:2rem;margin-bottom:0.5rem">⏳</div>
             <p style="font-weight:600;margin-bottom:0.3rem">
-              ${isAr ? 'لقد سجلت بالفعل اليوم!' : 'Already subscribed today!'}
+              ${isAr ? 'لقد سجلت بالفعل' : 'Already subscribed !'}
             </p>
             <p style="font-size:0.82rem;color:var(--text-muted)">
-              ${isAr ? 'يمكنك المحاولة مرة أخرى غداً.' : 'You can try again tomorrow.'}
-            </p>
+            
           </div>`;
         successEl.style.display = 'block';
         try { localStorage.setItem(NEWSLETTER_CONFIG.storageKey, '1'); } catch(e) {}
