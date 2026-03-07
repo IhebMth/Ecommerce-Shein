@@ -49,15 +49,6 @@
    ① CONFIGURATION — edit these objects only
 ══════════════════════════════════════════════════════════ */
 
-/*  ══════════════════════════════════════════════════════════
-   Popup and banner configs — edit text, timing, and toggle features
-   ══════════════════════════════════════════════════════════
-   
-   Popup shows at 20s, re-shows every 5 min if not subscribed. 
-   Clicking X doesn't permanently lock it. 
-   Shows "You're already subscribed" if duplicate email
-   */
-
 const PROMO_CONFIG = {
   active: true,
 
@@ -79,11 +70,11 @@ const PROMO_CONFIG = {
 const NEWSLETTER_CONFIG = {
   active: true,
 
-  /* First appearance: 20 seconds after page load */
-  delayMs: 20000,
+  /* First appearance: 10 seconds after page load */
+  delayMs: 10000,
 
-  /* Re-show every 5 minutes if not yet subscribed */
-  repeatMs: 5 * 60 * 1000,
+  /* Re-show every 1 minute if not yet subscribed */
+  repeatMs: 1 * 60 * 1000,
 
   heading: {
     en: 'Join the NOVA Family 💌',
@@ -379,20 +370,17 @@ function initNewsletterPopup() {
 
   function _closeNl() {
     overlay.classList.remove('open');
-    /* Don't lock permanently — re-show after repeatMs if not subscribed */
+  }
+
+  /* Keep re-showing every repeatMs until subscribed */
+  setInterval(() => {
     try {
       if (!localStorage.getItem(NEWSLETTER_CONFIG.storageKey)) {
-        setTimeout(() => {
-          try {
-            if (!localStorage.getItem(NEWSLETTER_CONFIG.storageKey)) {
-              overlay.classList.add('open');
-              _fillNl();
-            }
-          } catch(e) {}
-        }, NEWSLETTER_CONFIG.repeatMs);
+        overlay.classList.add('open');
+        _fillNl();
       }
     } catch(e) {}
-  }
+  }, NEWSLETTER_CONFIG.repeatMs);
 
   document.getElementById('nl-close').addEventListener('click', _closeNl);
   document.getElementById('nl-skip').addEventListener('click',  _closeNl);
