@@ -244,11 +244,7 @@ function _updatePromoBanner() {
 ══════════════════════════════════════════════════════════ */
 function initNewsletterPopup() {
   if (!NEWSLETTER_CONFIG.active) return;
-
-  /* Only skip if user already successfully subscribed */
-  try {
-    if (localStorage.getItem(NEWSLETTER_CONFIG.storageKey)) return;
-  } catch(e) {}
+  /* Always build the overlay — guard only blocks the show timer */
 
   _injectStyle('newsletter-styles', `
     #nl-overlay {
@@ -437,6 +433,8 @@ function initNewsletterPopup() {
         try { localStorage.setItem(NEWSLETTER_CONFIG.storageKey, '1'); } catch(e) {}
         return;
       }
+
+      if (apiRes.ok && apiData.success) {
         submitBtn.disabled = false;
         submitBtn.textContent = _t(NEWSLETTER_CONFIG.btnLabel);
         document.getElementById('nl-form').style.display = 'none';
