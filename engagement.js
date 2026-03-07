@@ -372,19 +372,28 @@ function initNewsletterPopup() {
     overlay.classList.remove('open');
   }
 
-  /* Keep re-showing every repeatMs until subscribed */
-  setInterval(() => {
+  document.getElementById('nl-close').addEventListener('click', _closeNl);
+  document.getElementById('nl-skip').addEventListener('click',  _closeNl);
+  overlay.addEventListener('click', e => { if (e.target === overlay) _closeNl(); });
+
+  /* Show after initial delay, then keep repeating every repeatMs until subscribed */
+  function _tryShow() {
     try {
       if (!localStorage.getItem(NEWSLETTER_CONFIG.storageKey)) {
         overlay.classList.add('open');
         _fillNl();
       }
-    } catch(e) {}
-  }, NEWSLETTER_CONFIG.repeatMs);
+    } catch(e) {
+      overlay.classList.add('open');
+      _fillNl();
+    }
+  }
 
-  document.getElementById('nl-close').addEventListener('click', _closeNl);
-  document.getElementById('nl-skip').addEventListener('click',  _closeNl);
-  overlay.addEventListener('click', e => { if (e.target === overlay) _closeNl(); });
+  setTimeout(() => {
+    _tryShow();
+    /* After first show, repeat every repeatMs */
+    setInterval(_tryShow, NEWSLETTER_CONFIG.repeatMs);
+  }, NEWSLETTER_CONFIG.delayMs);
 
   document.getElementById('nl-submit').addEventListener('click', async () => {
     const email = document.getElementById('nl-email').value.trim();
@@ -407,8 +416,27 @@ function initNewsletterPopup() {
       });
       const apiData = await apiRes.json();
 
-      /* Already subscribed — tell them and lock popup */
-      if (apiData.already) {
+      /* Already used their daily subscribe — show message and lock */
+      if (apiRes.status === 429 || apiData.error === 'already_limited') {
+        submitBtn.disabled = false;
+        submitBtn.textContent = _t(NEWSLETTER_CONFIG.btnLabel);
+        document.getElementById('nl-form').style.display = 'none';
+        const successEl = document.getElementById('nl-success');
+        const isAr = _lang() === 'ar';
+        successEl.innerHTML = `
+          <div style="text-align:center;padding:1rem 0">
+            <div style="font-size:2rem;margin-bottom:0.5rem">⏳</div>
+            <p style="font-weight:600;margin-bottom:0.3rem">
+              ${isAr ? 'لقد سجلت بالفعل اليوم!' : 'Already subscribed today!'}
+            </p>
+            <p style="font-size:0.82rem;color:var(--text-muted)">
+              ${isAr ? 'يمكنك المحاولة مرة أخرى غداً.' : 'You can try again tomorrow.'}
+            </p>
+          </div>`;
+        successEl.style.display = 'block';
+        try { localStorage.setItem(NEWSLETTER_CONFIG.storageKey, '1'); } catch(e) {}
+        return;
+      }
         submitBtn.disabled = false;
         submitBtn.textContent = _t(NEWSLETTER_CONFIG.btnLabel);
         document.getElementById('nl-form').style.display = 'none';
@@ -479,16 +507,7 @@ function initNewsletterPopup() {
     submitBtn.textContent = _t(NEWSLETTER_CONFIG.btnLabel);
   });
 
-  /* Show after initial delay (20s) */
-  setTimeout(() => {
-    try {
-      if (!localStorage.getItem(NEWSLETTER_CONFIG.storageKey)) {
-        overlay.classList.add('open');
-      }
-    } catch(e) {
-      overlay.classList.add('open');
-    }
-  }, NEWSLETTER_CONFIG.delayMs);
+  /* (first show + repeat handled above) */
 }
 
 /* ══════════════════════════════════════════════════════════
