@@ -463,42 +463,48 @@ function initNewsletterPopup() {
     const pct  = NEWSLETTER_CONFIG.discountActive ? (NEWSLETTER_CONFIG.discountPct || 10) : 0;
     const code = 'NOVA' + pct + '-' + Math.random().toString(36).substring(2, 7).toUpperCase();
 
-    /* Hide form, show beautiful success message with the code */
+    /* Hide form, show success */
     document.getElementById('nl-form').style.display = 'none';
     const successEl = document.getElementById('nl-success');
     const isAr = _lang() === 'ar';
     const showDiscount = NEWSLETTER_CONFIG.discountActive && pct > 0;
-    successEl.innerHTML = `
-      <div style="text-align:center;padding:0.5rem 0">
-        <div style="font-size:2.2rem;margin-bottom:0.6rem">${showDiscount ? '🎉' : '💌'}</div>
-        <p style="font-size:1rem;font-weight:600;color:var(--text-primary);margin-bottom:0.4rem">
-          ${isAr ? 'مرحباً بك في عائلة NOVA!' : "You're in the NOVA Family!"}
-        </p>
-        ${showDiscount ? `<p style="font-size:0.84rem;color:var(--text-muted);margin-bottom:1.2rem">
-          ${isAr ? 'كود الخصم ' + pct + '% الخاص بك:' : 'Your exclusive ' + pct + '% discount code:'}
-        </p>` : ''}
-        ${showDiscount ? `<div style="
-          background:var(--bg-secondary);
-          border:2px dashed var(--accent);
-          padding:0.8rem 1.5rem;
-          font-family:'Courier New',monospace;
-          font-size:1.3rem;
-          font-weight:700;
-          letter-spacing:0.12em;
-          color:var(--accent);
-          margin-bottom:1rem;
-          user-select:all;
-          cursor:pointer;
-          position:relative;
-        " onclick="navigator.clipboard&&navigator.clipboard.writeText('${code}');this.title='${isAr?'تم النسخ!':'Copied!'}';this.style.background='var(--accent)';this.style.color='#fff';setTimeout(()=>{this.style.background='';this.style.color=''},1200)">
-          ${code}
-        </div>
-        <p style="font-size:0.72rem;color:var(--text-muted)">
-          ${isAr ? '📋 انقر على الكود لنسخه — استخدمه عند الدفع' : '📋 Click the code to copy it — use it at checkout'}
-        </p>` : `<p style="font-size:0.84rem;color:var(--text-muted)">${isAr ? 'شكراً للاشتراك! ستكونين أول من يعلم بأحدث الوصولات.' : 'Thanks for subscribing! You\'ll be first to know about new arrivals.'}</p>`}
-      </div>
-    `;
-    successEl.style.display = 'block';
+
+    /* All text built outside template literals — no Arabic inside attrs */
+    const _welcome    = isAr ? '\u0645\u0631\u062d\u0628\u0627\u064b \u0628\u0643 \u0641\u064a \u0639\u0627\u0626\u0644\u0629 NOVA!' : "You're in the NOVA Family!";
+    const _noDiscMsg  = isAr
+      ? '\u0633\u062a\u0643\u0648\u0646\u064a\u0646 \u0623\u0648\u0644 \u0645\u0646 \u064a\u0639\u0644\u0645 \u0628\u0623\u062d\u062f\u062b \u0627\u0644\u0648\u0635\u0648\u0644\u0627\u062a \u0648\u0627\u0644\u0639\u0631\u0648\u0636 \u0627\u0644\u062d\u0635\u0631\u064a\u0629.'
+      : "You'll be first to know about new arrivals & exclusive offers.";
+
+    let _innerHTML = '<div style="text-align:center;padding:1.2rem 0">';
+    _innerHTML += '<div style="font-size:2.8rem;margin-bottom:0.8rem">' + (showDiscount ? '\uD83C\uDF89' : '\uD83D\uDC8C') + '</div>';
+    _innerHTML += '<p style="font-size:1.05rem;font-weight:600;color:var(--text-primary);margin-bottom:0.5rem">' + _welcome + '</p>';
+
+    if (showDiscount) {
+      const _codeLabel  = isAr
+        ? ('\u0643\u0648\u062f \u0627\u0644\u062e\u0635\u0645 ' + pct + '% \u0627\u0644\u062e\u0627\u0635 \u0628\u0643:')
+        : ('Your exclusive ' + pct + '% discount code:');
+      const _copyHint   = isAr
+        ? '\u0627\u0646\u0642\u0631 \u0639\u0644\u0649 \u0627\u0644\u0643\u0648\u062f \u0644\u0646\u0633\u062e\u0647 \u2014 \u0627\u0633\u062a\u062e\u062f\u0645\u0647 \u0639\u0646\u062f \u0627\u0644\u062f\u0641\u0639'
+        : 'Click the code to copy it \u2014 use it at checkout';
+      const _onclick = 'var el=this;navigator.clipboard&&navigator.clipboard.writeText(el.dataset.code);' +
+        "el.style.background='var(--accent)';el.style.color='#fff';" +
+        "setTimeout(function(){el.style.background='';el.style.color='';},1200)";
+      _innerHTML += '<p style="font-size:0.84rem;color:var(--text-muted);margin-bottom:1rem">' + _codeLabel + '</p>';
+      _innerHTML += '<div data-code="' + code + '" onclick="' + _onclick + '" style="' +
+        'background:var(--bg-secondary);border:2px dashed var(--accent);padding:0.8rem 1.5rem;' +
+        "font-family:'Courier New',monospace;font-size:1.3rem;font-weight:700;" +
+        'letter-spacing:0.12em;color:var(--accent);margin-bottom:0.8rem;user-select:all;cursor:pointer;">' +
+        code + '</div>';
+      _innerHTML += '<p style="font-size:0.72rem;color:var(--text-muted)">' + _copyHint + '</p>';
+    } else {
+      /* Discount OFF — just show warm welcome, nothing else */
+      _innerHTML += '<p style="font-size:0.87rem;color:var(--text-muted);line-height:1.5">' + _noDiscMsg + '</p>';
+    }
+
+    _innerHTML += '</div>';
+    successEl.innerHTML = _innerHTML;
+
+        successEl.style.display = 'block';
     try { localStorage.setItem(NEWSLETTER_CONFIG.storageKey, '1'); } catch(e) {}
     /* Don't auto-close — let them copy the code first */
     submitBtn.disabled = false;
