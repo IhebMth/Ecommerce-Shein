@@ -411,12 +411,11 @@ function initNewsletterPopup() {
     submitBtn.disabled = true;
     submitBtn.textContent = _lang() === 'ar' ? 'جارٍ...' : 'Sending…';
 
-    /* Generate code once — sent to API and shown in UI */
-    const _discOn0 = NEWSLETTER_CONFIG.discountActive === true || NEWSLETTER_CONFIG.discountActive === 'true';
-    const _pct0 = _discOn0 ? (NEWSLETTER_CONFIG.discountPct || 10) : 0;
-    const _generatedCode = _pct0 > 0
-      ? ('NOVA' + _pct0 + '-' + Math.random().toString(36).substring(2,7).toUpperCase())
-      : null;
+    /* Generate code — ALWAYS generated regardless of settings, sent to API for storage */
+    /* discountActive only affects what the USER SEES, not whether we save the code */
+    const _pct0 = parseInt(NEWSLETTER_CONFIG.discountPct, 10) || 10;
+    const _generatedCode = 'NOVA' + _pct0 + '-' + Math.random().toString(36).substring(2,7).toUpperCase();
+    console.log('[NOVA] generating code:', _generatedCode, '| discountActive:', NEWSLETTER_CONFIG.discountActive);
 
     /* Subscribe via backend API */
     try {
@@ -468,10 +467,12 @@ function initNewsletterPopup() {
     }
 
     /* Use the code already sent to API */
-    /* Re-read discountActive in case settings API updated it after page load */
-    const discountIsOn = NEWSLETTER_CONFIG.discountActive === true || NEWSLETTER_CONFIG.discountActive === 'true';
-    const pct  = discountIsOn ? (NEWSLETTER_CONFIG.discountPct || 10) : 0;
-    const code = (discountIsOn && _generatedCode) ? _generatedCode : '';
+    /* discountActive controls what user SEES — code was always generated+saved to API */
+    const discountIsOn = NEWSLETTER_CONFIG.discountActive === true
+                      || NEWSLETTER_CONFIG.discountActive === 'true'
+                      || NEWSLETTER_CONFIG.discountActive === undefined; /* default ON if not set */
+    const pct  = _pct0;
+    const code = _generatedCode;
 
     /* Hide form + hero, show success */
     document.getElementById('nl-form').style.display    = 'none';
