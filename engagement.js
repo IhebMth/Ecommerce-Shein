@@ -362,7 +362,7 @@ function initNewsletterPopup() {
 
     const btnText = discOn
       ? _t(cfg.btnLabel)
-      : (L === 'ar' ? 'اشتركي الآن' : 'Subscribe');
+      : (L === 'ar' ? 'اشترك الآن' : 'Subscribe');
 
     document.getElementById('nl-body-text').textContent = bodyText;
     document.getElementById('nl-submit').textContent    = btnText;
@@ -427,46 +427,33 @@ function initNewsletterPopup() {
       });
       const apiData = await apiRes.json();
 
-      /* Already used their daily subscribe — show message and lock */
+      /* Rate limited — close silently, no message */
       if (apiRes.status === 429 || apiData.error === 'already_limited') {
         submitBtn.disabled = false;
         submitBtn.textContent = _t(NEWSLETTER_CONFIG.btnLabel);
-        document.getElementById('nl-form').style.display = 'none';
-        const successEl = document.getElementById('nl-success');
-        const isAr = _lang() === 'ar';
-        successEl.innerHTML = `
-          <div style="text-align:center;padding:1rem 0">
-            <div style="font-size:2rem;margin-bottom:0.5rem">⏳</div>
-            <p style="font-weight:600;margin-bottom:0.3rem">
-              ${isAr ? 'لقد سجلت بالفعل' : 'Already subscribed !'}
-            </p>
-            <p style="font-size:0.82rem;color:var(--text-muted)">
-            
-          </div>`;
-        successEl.style.display = 'block';
+        overlay.classList.remove('open');
         try { localStorage.setItem(NEWSLETTER_CONFIG.storageKey, '1'); } catch(e) {}
         return;
       }
 
-      /* Email already in DB — show "already subscribed" and stop */
+      /* Email already in DB — show message briefly then close */
       if (apiData.already === true) {
         submitBtn.disabled = false;
         submitBtn.textContent = _t(NEWSLETTER_CONFIG.btnLabel);
         document.getElementById('nl-form').style.display = 'none';
+        document.getElementById('nl-skip').style.display = 'none';
         const successEl = document.getElementById('nl-success');
-        const isAr = _lang() === 'ar';
-        successEl.innerHTML = `
-          <div style="text-align:center;padding:1rem 0">
-            <div style="font-size:2rem;margin-bottom:0.5rem">💌</div>
-            <p style="font-weight:600;margin-bottom:0.3rem">
-              ${isAr ? 'أنت مشترك بالفعل!' : "You're already subscribed!"}
-            </p>
-            <p style="font-size:0.82rem;color:var(--text-muted)">
-              ${isAr ? 'بريدك الإلكتروني موجود بالفعل في قائمتنا 🎉' : 'Your email is already on our list 🎉'}
-            </p>
-          </div>`;
+        const isAr2 = _lang() === 'ar';
+        successEl.innerHTML = '<div style="text-align:center;padding:1.5rem 0">'
+          + '<div style="font-size:2rem;margin-bottom:0.6rem">💌</div>'
+          + '<p style="font-weight:600;margin-bottom:0.3rem">'
+          + (isAr2 ? 'أنت مشترك بالفعل!' : "You're already subscribed!")
+          + '</p><p style="font-size:0.82rem;color:var(--text-muted)">'
+          + (isAr2 ? 'بريدك الإلكتروني موجود بالفعل في قائمتنا 🎉' : 'Your email is already on our list 🎉')
+          + '</p></div>';
         successEl.style.display = 'block';
         try { localStorage.setItem(NEWSLETTER_CONFIG.storageKey, '1'); } catch(e) {}
+        setTimeout(() => overlay.classList.remove('open'), 2500);
         return;
       }
 
