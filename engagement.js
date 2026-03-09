@@ -54,8 +54,8 @@ const PROMO_CONFIG = {
 
   /* ✏️ Change this text to your current offer */
   text: {
-    en: '🔥 Summer Sale — Up to 40% off selected styles. Limited time only!',
-    ar: '🔥 تخفيضات الصيف — حتى 40% على تشكيلات مختارة. عرض محدود!'
+    en: '🔥 Summer Sale — Up to 40% off selected styles. Limited time only!', /* overridden by API: promo_banner_text_en */
+    ar: '🔥 تخفيضات الصيف — حتى 40% على تشكيلات مختارة. عرض محدود!'        /* overridden by API: promo_banner_text_ar */
   },
 
   /* ✏️ Optional CTA button — set label to '' to hide */
@@ -68,12 +68,11 @@ const PROMO_CONFIG = {
 };
 
 const NEWSLETTER_CONFIG = {
-  active: true,
+  active: true,         /* overridden by API: newsletter_popup_active */
+  discountActive: true, /* overridden by API: newsletter_discount_active */
+  discountPct: 10,      /* overridden by API: newsletter_discount_pct */
 
-  /* First appearance: 10 seconds after page load */
   delayMs: 10000,
-
-  /* Re-show every 1 minute if not yet subscribed */
   repeatMs: 1 * 60 * 1000,
 
   heading: {
@@ -81,8 +80,8 @@ const NEWSLETTER_CONFIG = {
     ar: 'انضم إلى عائلة NOVA 💌'
   },
   body: {
-    en: 'Get 10% off your first order + early access to new arrivals.',
-    ar: 'احصل على 10% خصم على طلبك الأول + وصول مبكر للوصول الجديد.'
+    en: 'Get {pct}% off your first order + early access to new arrivals.',
+    ar: 'احصل على {pct}% خصم على طلبك الأول + وصول مبكر للوصول الجديد.'
   },
   placeholder: {
     en: 'Your email address',
@@ -91,10 +90,6 @@ const NEWSLETTER_CONFIG = {
   btnLabel: {
     en: 'Claim My Discount',
     ar: 'احصل على الخصم'
-  },
-  successMsg: {
-    en: "🎉 You're in! Check your inbox for your 10% code.",
-    ar: '🎉 تم! تحقق من بريدك الإلكتروني للحصول على كود الخصم.'
   },
 
   storageKey: 'nova_newsletter_shown'
@@ -355,7 +350,7 @@ function initNewsletterPopup() {
     const L = _lang();
     const cfg = NEWSLETTER_CONFIG;
     document.getElementById('nl-heading').textContent   = _t(cfg.heading);
-    document.getElementById('nl-body-text').textContent = _t(cfg.body);
+    document.getElementById('nl-body-text').textContent = _t(cfg.body).replace('{pct}', cfg.discountPct || 10);
     document.getElementById('nl-email').placeholder     = _t(cfg.placeholder);
     document.getElementById('nl-submit').textContent    = _t(cfg.btnLabel);
     document.getElementById('nl-success').textContent   = _t(cfg.successMsg);
@@ -460,23 +455,25 @@ function initNewsletterPopup() {
       console.warn('[NOVA] Newsletter API error:', err.message);
     }
 
-    /* Generate a unique 10% discount code */
-    const code = 'NOVA10-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+    /* Generate a unique discount code based on current setting */
+    const pct  = NEWSLETTER_CONFIG.discountActive ? (NEWSLETTER_CONFIG.discountPct || 10) : 0;
+    const code = 'NOVA' + pct + '-' + Math.random().toString(36).substring(2, 7).toUpperCase();
 
     /* Hide form, show beautiful success message with the code */
     document.getElementById('nl-form').style.display = 'none';
     const successEl = document.getElementById('nl-success');
     const isAr = _lang() === 'ar';
+    const showDiscount = NEWSLETTER_CONFIG.discountActive && pct > 0;
     successEl.innerHTML = `
       <div style="text-align:center;padding:0.5rem 0">
-        <div style="font-size:2.2rem;margin-bottom:0.6rem">🎉</div>
+        <div style="font-size:2.2rem;margin-bottom:0.6rem">${showDiscount ? '🎉' : '💌'}</div>
         <p style="font-size:1rem;font-weight:600;color:var(--text-primary);margin-bottom:0.4rem">
           ${isAr ? 'مرحباً بك في عائلة NOVA!' : "You're in the NOVA Family!"}
         </p>
-        <p style="font-size:0.84rem;color:var(--text-muted);margin-bottom:1.2rem">
-          ${isAr ? 'كود الخصم 10% الخاص بك:' : 'Your exclusive 10% discount code:'}
-        </p>
-        <div style="
+        ${showDiscount ? `<p style="font-size:0.84rem;color:var(--text-muted);margin-bottom:1.2rem">
+          ${isAr ? `كود الخصم ${pct}% الخاص بك:` : `Your exclusive ${pct}% discount code:`}
+        </p>` : ''}
+        ${showDiscount ? `<div style="
           background:var(--bg-secondary);
           border:2px dashed var(--accent);
           padding:0.8rem 1.5rem;
@@ -494,7 +491,7 @@ function initNewsletterPopup() {
         </div>
         <p style="font-size:0.72rem;color:var(--text-muted)">
           ${isAr ? '📋 انقر على الكود لنسخه — استخدمه عند الدفع' : '📋 Click the code to copy it — use it at checkout'}
-        </p>
+        </p>` : `<p style="font-size:0.84rem;color:var(--text-muted)">${isAr ? 'شكراً للاشتراك! ستكونين أول من يعلم بأحدث الوصولات.' : 'Thanks for subscribing! You\'ll be first to know about new arrivals.'}</p>`}
       </div>
     `;
     successEl.style.display = 'block';
@@ -807,7 +804,32 @@ function _injectStyle(id, css) {
 /* ══════════════════════════════════════════════════════════
    INIT — runs after DOM is ready
 ══════════════════════════════════════════════════════════ */
-function initEngagement() {
+async function initEngagement() {
+  /* ── Fetch settings from API and apply to configs ── */
+  try {
+    const backendUrl = (typeof BACKEND_URL !== 'undefined') ? BACKEND_URL : '';
+    const res  = await fetch(backendUrl + '/api/settings');
+    if (res.ok) {
+      const s = await res.json();
+
+      /* Newsletter */
+      if (s.newsletter_popup_active    !== undefined) NEWSLETTER_CONFIG.active        = s.newsletter_popup_active    === 'true';
+      if (s.newsletter_discount_active !== undefined) NEWSLETTER_CONFIG.discountActive = s.newsletter_discount_active === 'true';
+      if (s.newsletter_discount_pct    !== undefined) NEWSLETTER_CONFIG.discountPct    = parseInt(s.newsletter_discount_pct, 10) || 10;
+
+      /* Promo banner */
+      if (s.promo_banner_active   !== undefined) PROMO_CONFIG.active     = s.promo_banner_active === 'true';
+      if (s.promo_banner_text_en  !== undefined) PROMO_CONFIG.text.en    = s.promo_banner_text_en;
+      if (s.promo_banner_text_ar  !== undefined) PROMO_CONFIG.text.ar    = s.promo_banner_text_ar;
+
+      /* Sale timer */
+      if (s.sale_timer_active     !== undefined) SALE_CONFIG.active      = s.sale_timer_active === 'true';
+      if (s.sale_timer_end_date   !== undefined) SALE_CONFIG.endDate     = s.sale_timer_end_date;
+      if (s.sale_timer_label_en   !== undefined) SALE_CONFIG.label.en    = s.sale_timer_label_en;
+      if (s.sale_timer_label_ar   !== undefined) SALE_CONFIG.label.ar    = s.sale_timer_label_ar;
+    }
+  } catch (_) { /* silent — use hardcoded defaults */ }
+
   initPromoBanner();
   initCountdown();
   initNewsletterPopup();
