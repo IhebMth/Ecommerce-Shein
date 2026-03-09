@@ -347,12 +347,26 @@ function initNewsletterPopup() {
   document.body.appendChild(overlay);
 
   function _fillNl() {
-    const L = _lang();
+    const L   = _lang();
     const cfg = NEWSLETTER_CONFIG;
-    document.getElementById('nl-heading').textContent   = _t(cfg.heading);
-    document.getElementById('nl-body-text').textContent = _t(cfg.body).replace('{pct}', cfg.discountPct || 10);
+    const discOn = cfg.discountActive !== false;
+
+    document.getElementById('nl-heading').textContent = _t(cfg.heading);
+
+    /* Body text + button swap when discount is OFF */
+    const bodyText = discOn
+      ? _t(cfg.body).replace('{pct}', cfg.discountPct || 10)
+      : (L === 'ar'
+          ? 'كوني أول من يعلم بالوصولات الجديدة والعروض الحصرية.'
+          : 'Be first to know about new arrivals & exclusive offers.');
+
+    const btnText = discOn
+      ? _t(cfg.btnLabel)
+      : (L === 'ar' ? 'اشتركي الآن' : 'Subscribe');
+
+    document.getElementById('nl-body-text').textContent = bodyText;
+    document.getElementById('nl-submit').textContent    = btnText;
     document.getElementById('nl-email').placeholder     = _t(cfg.placeholder);
-    document.getElementById('nl-submit').textContent    = _t(cfg.btnLabel);
     document.getElementById('nl-success').textContent   = _t(cfg.successMsg);
     const skip = document.getElementById('nl-skip');
     if (skip) skip.textContent = L === 'ar' ? 'لا شكراً' : 'No thanks';
@@ -397,13 +411,19 @@ function initNewsletterPopup() {
     submitBtn.disabled = true;
     submitBtn.textContent = _lang() === 'ar' ? 'جارٍ...' : 'Sending…';
 
+    /* Generate code once — sent to API and shown in UI */
+    const _pct0 = NEWSLETTER_CONFIG.discountActive !== false ? (NEWSLETTER_CONFIG.discountPct || 10) : 0;
+    const _generatedCode = _pct0 > 0
+      ? ('NOVA' + _pct0 + '-' + Math.random().toString(36).substring(2,7).toUpperCase())
+      : null;
+
     /* Subscribe via backend API */
     try {
       const backendUrl = (typeof BACKEND_URL !== 'undefined') ? BACKEND_URL : '';
       const apiRes = await fetch(backendUrl + '/api/newsletter', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email, lang: _lang() }),
+        body:    JSON.stringify({ email, lang: _lang(), discount_code: _generatedCode }),
       });
       const apiData = await apiRes.json();
 
@@ -459,9 +479,9 @@ function initNewsletterPopup() {
       console.warn('[NOVA] Newsletter API error:', err.message);
     }
 
-    /* Generate a unique discount code based on current setting */
-    const pct  = NEWSLETTER_CONFIG.discountActive ? (NEWSLETTER_CONFIG.discountPct || 10) : 0;
-    const code = 'NOVA' + pct + '-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+    /* Use the code already sent to API */
+    const pct  = _pct0;
+    const code = _generatedCode || '';
 
     /* Hide form, show success */
     document.getElementById('nl-form').style.display = 'none';
