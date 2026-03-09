@@ -362,7 +362,7 @@ function initNewsletterPopup() {
 
     const btnText = discOn
       ? _t(cfg.btnLabel)
-      : (L === 'ar' ? 'اشترك الآن' : 'Subscribe');
+      : (L === 'ar' ? 'اشتركي الآن' : 'Subscribe');
 
     document.getElementById('nl-body-text').textContent = bodyText;
     document.getElementById('nl-submit').textContent    = btnText;
@@ -412,7 +412,8 @@ function initNewsletterPopup() {
     submitBtn.textContent = _lang() === 'ar' ? 'جارٍ...' : 'Sending…';
 
     /* Generate code once — sent to API and shown in UI */
-    const _pct0 = NEWSLETTER_CONFIG.discountActive !== false ? (NEWSLETTER_CONFIG.discountPct || 10) : 0;
+    const _discOn0 = NEWSLETTER_CONFIG.discountActive === true || NEWSLETTER_CONFIG.discountActive === 'true';
+    const _pct0 = _discOn0 ? (NEWSLETTER_CONFIG.discountPct || 10) : 0;
     const _generatedCode = _pct0 > 0
       ? ('NOVA' + _pct0 + '-' + Math.random().toString(36).substring(2,7).toUpperCase())
       : null;
@@ -467,14 +468,20 @@ function initNewsletterPopup() {
     }
 
     /* Use the code already sent to API */
-    const pct  = _pct0;
-    const code = _generatedCode || '';
+    /* Re-read discountActive in case settings API updated it after page load */
+    const discountIsOn = NEWSLETTER_CONFIG.discountActive === true || NEWSLETTER_CONFIG.discountActive === 'true';
+    const pct  = discountIsOn ? (NEWSLETTER_CONFIG.discountPct || 10) : 0;
+    const code = (discountIsOn && _generatedCode) ? _generatedCode : '';
 
-    /* Hide form, show success */
-    document.getElementById('nl-form').style.display = 'none';
+    /* Hide form + hero, show success */
+    document.getElementById('nl-form').style.display    = 'none';
+    document.getElementById('nl-skip').style.display    = 'none';
+    document.querySelector('.nl-hero').style.display    = 'none';
+    document.querySelector('.nl-heading') && (document.querySelector('.nl-heading').style.display = 'none');
+    document.querySelector('.nl-body-text') && (document.querySelector('.nl-body-text').style.display = 'none');
     const successEl = document.getElementById('nl-success');
     const isAr = _lang() === 'ar';
-    const showDiscount = NEWSLETTER_CONFIG.discountActive && pct > 0;
+    const showDiscount = discountIsOn && pct > 0 && code;
 
     /* All text built outside template literals — no Arabic inside attrs */
     const _welcome    = isAr ? '\u0645\u0631\u062d\u0628\u0627\u064b \u0628\u0643 \u0641\u064a \u0639\u0627\u0626\u0644\u0629 NOVA!' : "You're in the NOVA Family!";
@@ -833,7 +840,9 @@ async function initEngagement() {
       /* Newsletter */
       if (s.newsletter_popup_active    !== undefined) NEWSLETTER_CONFIG.active        = s.newsletter_popup_active    === 'true';
       if (s.newsletter_discount_active !== undefined) NEWSLETTER_CONFIG.discountActive = s.newsletter_discount_active === 'true';
+      else NEWSLETTER_CONFIG.discountActive = true; /* key missing → default ON */
       if (s.newsletter_discount_pct    !== undefined) NEWSLETTER_CONFIG.discountPct    = parseInt(s.newsletter_discount_pct, 10) || 10;
+      console.log('[NOVA] discount settings:', { active: NEWSLETTER_CONFIG.discountActive, pct: NEWSLETTER_CONFIG.discountPct });
 
       /* Promo banner */
       if (s.promo_banner_active   !== undefined) PROMO_CONFIG.active     = s.promo_banner_active === 'true';
