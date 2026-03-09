@@ -428,7 +428,8 @@ function initNewsletterPopup() {
         return;
       }
 
-      if (apiRes.ok && apiData.success) {
+      /* Email already in DB — show "already subscribed" and stop */
+      if (apiData.already === true) {
         submitBtn.disabled = false;
         submitBtn.textContent = _t(NEWSLETTER_CONFIG.btnLabel);
         document.getElementById('nl-form').style.display = 'none';
@@ -449,7 +450,10 @@ function initNewsletterPopup() {
         return;
       }
 
-      if (!apiRes.ok && !apiData.success) throw new Error(apiData.error || 'Subscribe failed');
+      /* API error — throw so catch block runs, then falls through to show discount */
+      if (!apiRes.ok) throw new Error(apiData.error || 'Subscribe failed');
+
+      /* New subscriber (success:true, already:undefined) — fall through to discount code below */
     } catch(err) {
       /* Non-fatal — show success anyway (UX) but log it */
       console.warn('[NOVA] Newsletter API error:', err.message);
@@ -471,7 +475,7 @@ function initNewsletterPopup() {
           ${isAr ? 'مرحباً بك في عائلة NOVA!' : "You're in the NOVA Family!"}
         </p>
         ${showDiscount ? `<p style="font-size:0.84rem;color:var(--text-muted);margin-bottom:1.2rem">
-          ${isAr ? `كود الخصم ${pct}% الخاص بك:` : `Your exclusive ${pct}% discount code:`}
+          ${isAr ? 'كود الخصم ' + pct + '% الخاص بك:' : 'Your exclusive ' + pct + '% discount code:'}
         </p>` : ''}
         ${showDiscount ? `<div style="
           background:var(--bg-secondary);
@@ -749,7 +753,8 @@ function initCountdown() {
 
     if (diff <= 0) {
       clearInterval(_saleInterval);
-      bar.innerHTML = `<span class="sc-ended">${_lang() === 'ar' ? 'انتهى العرض' : 'Sale Ended'}</span>`;
+      const endedText = _lang() === 'ar' ? '\u0627\u0646\u062a\u0647\u0649 \u0627\u0644\u0639\u0631\u0636' : 'Sale Ended';
+      bar.innerHTML = '<span class="sc-ended">' + endedText + '</span>';
       return;
     }
 
