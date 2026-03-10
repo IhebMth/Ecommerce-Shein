@@ -452,29 +452,26 @@ function initNewsletterPopup() {
         try { localStorage.setItem(NEWSLETTER_CONFIG.storageKey, '1'); } catch(e) {}
         /* Close new-subscriber popup */
         overlay.classList.remove('open');
-        /* Ask API for updated code — API only regenerates if offer % changed */
-        setTimeout(async () => {
-          if (typeof _openReturningPopup === 'function') {
-            const _rOn  = NEWSLETTER_CONFIG.rewardActive === true;
-            const _rPct = _rOn ? (parseInt(NEWSLETTER_CONFIG.rewardPct, 10) || 3) : 0;
-            const _dPct = (NEWSLETTER_CONFIG.discountActive === true || NEWSLETTER_CONFIG.discountActive === 'true')
-              ? (parseInt(NEWSLETTER_CONFIG.discountPct, 10) || 10) : 0;
-            let resolvedCode = apiData.code || null;
-            if (_rPct || _dPct) {
-              try {
-                const _bu  = (typeof BACKEND_URL !== 'undefined') ? BACKEND_URL : '';
-                const _res = await fetch(_bu + '/api/newsletter', {
-                  method: 'POST', headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ email, lang: _lang(), reward_pct: _rPct, discount_pct: _dPct }),
-                });
-                const _d = await _res.json();
-                if (_d.reward_code) resolvedCode = _d.reward_code;
-                else if (_d.discount_code) resolvedCode = _d.discount_code;
-              } catch(_) {}
+        /* Only open returning popup if reward is ON */
+        if (NEWSLETTER_CONFIG.rewardActive === true) {
+          setTimeout(async () => {
+            const _rPct = parseInt(NEWSLETTER_CONFIG.rewardPct, 10) || 3;
+            let resolvedCode = null;
+            try {
+              const _bu  = (typeof BACKEND_URL !== 'undefined') ? BACKEND_URL : '';
+              const _res = await fetch(_bu + '/api/newsletter', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, lang: _lang(), reward_pct: _rPct }),
+              });
+              const _d = await _res.json();
+              resolvedCode = _d.reward_code || null;
+            } catch(_) {}
+            if (typeof _openReturningPopup === 'function') {
+              _openReturningPopup(email, resolvedCode);
             }
-            _openReturningPopup(email, resolvedCode);
-          }
-        }, 350);
+          }, 350);
+        }
+        /* reward OFF → new popup already closed, nothing shown — correct */
         return;
       }
 
@@ -1047,10 +1044,14 @@ function _openReturningPopup(email, code) {
 
 /* Timer-based — shows Screen 1 for known subscribers */
 function initReturningPopup() {
+  /* Both the main popup AND reward must be active to show returning popup */
   if (!NEWSLETTER_CONFIG.active) return;
+  if (!NEWSLETTER_CONFIG.rewardActive) return;
   _buildReturningPopup();
 
   function _tryShowRet() {
+    /* Re-check rewardActive each time in case settings changed */
+    if (!NEWSLETTER_CONFIG.rewardActive) return;
     try { if (!localStorage.getItem(NEWSLETTER_CONFIG.storageKey)) return; } catch(e) {}
     /* Reset to Screen 1 */
     document.getElementById('nl-ret-s1').style.display   = '';
@@ -1105,11 +1106,13 @@ async function initEngagement() {
   initCountdown();
   /* Route: returning subscriber sees their own popup, new sees the standard one */
   try {
-    if (localStorage.getItem(NEWSLETTER_CONFIG.storageKey)) {
+    if (localStorage.getItem(NEWSLETTER_CONFIG.storageKey) && NEWSLETTER_CONFIG.rewardActive) {
       initReturningPopup();
-    } else {
+      /* Don't show new-subscriber popup to known subscribers */
+    } else if (!localStorage.getItem(NEWSLETTER_CONFIG.storageKey)) {
       initNewsletterPopup();
     }
+    /* else: known subscriber but reward is OFF — show nothing */
   } catch(e) { initNewsletterPopup(); }
   renderRecentlyViewed();
 }
