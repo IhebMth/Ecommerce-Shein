@@ -411,11 +411,12 @@ function initNewsletterPopup() {
     submitBtn.disabled = true;
     submitBtn.textContent = _lang() === 'ar' ? 'جارٍ...' : 'Sending…';
 
-    /* Generate code — ALWAYS generated regardless of settings, sent to API for storage */
-    /* discountActive only affects what the USER SEES, not whether we save the code */
-    const _pct0 = parseInt(NEWSLETTER_CONFIG.discountPct, 10) || 10;
-    const _generatedCode = 'NOVA' + _pct0 + '-' + Math.random().toString(36).substring(2,7).toUpperCase();
-    console.log('[NOVA] generating code:', _generatedCode, '| discountActive:', NEWSLETTER_CONFIG.discountActive);
+    /* Generate code ONLY when discount is ON */
+    const _discOn = NEWSLETTER_CONFIG.discountActive === true || NEWSLETTER_CONFIG.discountActive === 'true';
+    const _pct0   = _discOn ? (parseInt(NEWSLETTER_CONFIG.discountPct, 10) || 10) : 0;
+    const _generatedCode = _discOn
+      ? ('NOVA' + _pct0 + '-' + Math.random().toString(36).substring(2, 7).toUpperCase())
+      : null;
 
     /* Subscribe via backend API */
     try {
@@ -423,7 +424,7 @@ function initNewsletterPopup() {
       const apiRes = await fetch(backendUrl + '/api/newsletter', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email, lang: _lang(), discount_code: _generatedCode }),
+        body:    JSON.stringify({ email, lang: _lang(), discount_code: _discOn ? _generatedCode : null }),
       });
       const apiData = await apiRes.json();
 
@@ -436,24 +437,58 @@ function initNewsletterPopup() {
         return;
       }
 
-      /* Email already in DB — show message briefly then close */
+      /* Email already in DB — if discount is ON and API sent back no code, generate+backfill now */
       if (apiData.already === true) {
         submitBtn.disabled = false;
         submitBtn.textContent = _t(NEWSLETTER_CONFIG.btnLabel);
-        document.getElementById('nl-form').style.display = 'none';
-        document.getElementById('nl-skip').style.display = 'none';
+        /* Hide form elements */
+        document.getElementById('nl-form').style.display    = 'none';
+        document.getElementById('nl-skip').style.display    = 'none';
+        document.querySelector('.nl-hero') && (document.querySelector('.nl-hero').style.display = 'none');
+        document.querySelector('.nl-heading') && (document.querySelector('.nl-heading').style.display = 'none');
+        document.querySelector('.nl-body-text') && (document.querySelector('.nl-body-text').style.display = 'none');
         const successEl = document.getElementById('nl-success');
-        const isAr2 = _lang() === 'ar';
-        successEl.innerHTML = '<div style="text-align:center;padding:1.5rem 0">'
-          + '<div style="font-size:2rem;margin-bottom:0.6rem">💌</div>'
-          + '<p style="font-weight:600;margin-bottom:0.3rem">'
-          + (isAr2 ? 'أنت مشترك بالفعل!' : "You're already subscribed!")
-          + '</p><p style="font-size:0.82rem;color:var(--text-muted)">'
-          + (isAr2 ? 'بريدك الإلكتروني موجود بالفعل في قائمتنا 🎉' : 'Your email is already on our list 🎉')
-          + '</p></div>';
+        const isAr2     = _lang() === 'ar';
+        /* apiData.code = existing code from DB (null if none) */
+        const existingCode = apiData.code || null;
+        const _alreadyPct  = parseInt(NEWSLETTER_CONFIG.discountPct, 10) || 10;
+
+        if (existingCode) {
+          /* They have a code — show it like a new subscriber */
+          const _oc = 'var el=this;navigator.clipboard&&navigator.clipboard.writeText(el.dataset.code);'
+            + "el.style.background='var(--accent)';el.style.color='#fff';"
+            + "setTimeout(function(){el.style.background='';el.style.color='';},1200)";
+          const _lbl = isAr2
+            ? ('كودك الحصري ' + _alreadyPct + '%:')
+            : ('Your ' + _alreadyPct + '% discount code:');
+          successEl.innerHTML = '<div style="text-align:center;padding:1.2rem 0">'
+            + '<div style="font-size:2.4rem;margin-bottom:0.6rem">🎉</div>'
+            + '<p style="font-size:1rem;font-weight:600;margin-bottom:0.3rem">'
+            + (isAr2 ? 'مرحباً بك مجدداً!' : 'Welcome back!')
+            + '</p><p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1rem">' + _lbl + '</p>'
+            + '<div data-code="' + existingCode + '" onclick="' + _oc + '" style="'
+            + 'background:var(--bg-secondary);border:2px dashed var(--accent);padding:0.7rem 1.4rem;'
+            + "font-family:'Courier New',monospace;font-size:1.2rem;font-weight:700;"
+            + 'letter-spacing:0.12em;color:var(--accent);margin-bottom:0.6rem;user-select:all;cursor:pointer;">'
+            + existingCode + '</div>'
+            + '<p style="font-size:0.7rem;color:var(--text-muted)">'
+            + (isAr2 ? 'انقر لنسخه — استخدمه عند الدفع' : 'Click to copy — use at checkout')
+            + '</p></div>';
+        } else {
+          /* No code + discount OFF — warm message, auto-close, don't lock popup */
+          successEl.innerHTML = '<div style="text-align:center;padding:1.5rem 0">'
+            + '<div style="font-size:2rem;margin-bottom:0.6rem">💌</div>'
+            + '<p style="font-weight:600;margin-bottom:0.3rem">'
+            + (isAr2 ? 'أنت مشترك بالفعل!' : "You're already subscribed!")
+            + '</p><p style="font-size:0.82rem;color:var(--text-muted)">'
+            + (isAr2 ? 'نحن نقدر تواجدك معنا!' : 'We appreciate you being with us!')
+            + '</p></div>';
+          setTimeout(() => overlay.classList.remove('open'), 2500);
+          /* Don't set localStorage — discount may turn ON later, let popup show again */
+        }
         successEl.style.display = 'block';
-        try { localStorage.setItem(NEWSLETTER_CONFIG.storageKey, '1'); } catch(e) {}
-        setTimeout(() => overlay.classList.remove('open'), 2500);
+        /* Only lock popup if they have a code to use */
+        if (existingCode) { try { localStorage.setItem(NEWSLETTER_CONFIG.storageKey, '1'); } catch(e) {} }
         return;
       }
 
@@ -466,11 +501,8 @@ function initNewsletterPopup() {
       console.warn('[NOVA] Newsletter API error:', err.message);
     }
 
-    /* Use the code already sent to API */
-    /* discountActive controls what user SEES — code was always generated+saved to API */
-    const discountIsOn = NEWSLETTER_CONFIG.discountActive === true
-                      || NEWSLETTER_CONFIG.discountActive === 'true'
-                      || NEWSLETTER_CONFIG.discountActive === undefined; /* default ON if not set */
+    /* _discOn and _generatedCode already set above, just use them here */
+    const discountIsOn = _discOn;
     const pct  = _pct0;
     const code = _generatedCode;
 
