@@ -71,6 +71,7 @@ const NEWSLETTER_CONFIG = {
   active: true,         /* overridden by API: newsletter_popup_active */
   discountActive: true, /* overridden by API: newsletter_discount_active */
   discountPct: 10,      /* overridden by API: newsletter_discount_pct */
+  rewardPct:   5,       /* overridden by API: newsletter_reward_pct */
 
   delayMs: 10000,
   repeatMs: 1 * 60 * 1000,
@@ -935,7 +936,7 @@ function _buildReturningPopup() {
     btn.disabled = true;
     btn.textContent = _lang() === 'ar' ? '\u062c\u0627\u0631\u064d...' : 'Loading\u2026';
     const _dOn  = NEWSLETTER_CONFIG.discountActive === true || NEWSLETTER_CONFIG.discountActive === 'true';
-    const _pct  = parseInt(NEWSLETTER_CONFIG.discountPct, 10) || 10;
+    const _pct  = parseInt(NEWSLETTER_CONFIG.rewardPct, 10) || parseInt(NEWSLETTER_CONFIG.discountPct, 10) || 10;
     const _nc   = _dOn ? ('NOVA' + _pct + '-' + Math.random().toString(36).substring(2,7).toUpperCase()) : null;
     try {
       const bu  = (typeof BACKEND_URL !== 'undefined') ? BACKEND_URL : '';
@@ -951,8 +952,9 @@ function _buildReturningPopup() {
 
 function _showRetS2(code) {
   const L    = _lang();
-  const _dOn = NEWSLETTER_CONFIG.discountActive === true || NEWSLETTER_CONFIG.discountActive === 'true';
-  const _pct = parseInt(NEWSLETTER_CONFIG.discountPct, 10) || 10;
+  /* Extract % from code itself e.g. NOVA30-7LH00 → 30, fallback to rewardPct config */
+  const _pctFromCode = code ? parseInt((code.match(/^NOVA(\d+)-/) || [])[1], 10) || 0 : 0;
+  const _pct = _pctFromCode || parseInt(NEWSLETTER_CONFIG.rewardPct, 10) || parseInt(NEWSLETTER_CONFIG.discountPct, 10) || 10;
   document.getElementById('nl-ret-s1').style.display   = 'none';
   document.getElementById('nl-ret-hero').style.display = 'none';
   document.getElementById('nl-ret-s2').classList.remove('hidden');
@@ -995,7 +997,7 @@ function _showRetS2(code) {
 function _fillRetS1() {
   const L    = _lang();
   const dOn  = NEWSLETTER_CONFIG.discountActive === true || NEWSLETTER_CONFIG.discountActive === 'true';
-  const pct  = parseInt(NEWSLETTER_CONFIG.discountPct, 10) || 10;
+  const pct  = parseInt(NEWSLETTER_CONFIG.rewardPct, 10) || parseInt(NEWSLETTER_CONFIG.discountPct, 10) || 10;
   document.getElementById('nl-ret-heading').textContent =
     L === 'ar' ? '\u0645\u0631\u062d\u0628\u0627\u064b \u0628\u0639\u0648\u062f\u062a\u0643 \ud83d\udc4b' : 'Welcome Back \ud83d\udc4b';
   document.getElementById('nl-ret-sub').textContent = dOn
@@ -1062,6 +1064,7 @@ async function initEngagement() {
       if (s.newsletter_discount_active !== undefined) NEWSLETTER_CONFIG.discountActive = s.newsletter_discount_active === 'true';
       else NEWSLETTER_CONFIG.discountActive = true; /* key missing → default ON */
       if (s.newsletter_discount_pct    !== undefined) NEWSLETTER_CONFIG.discountPct    = parseInt(s.newsletter_discount_pct, 10) || 10;
+      if (s.newsletter_reward_pct      !== undefined) NEWSLETTER_CONFIG.rewardPct      = parseInt(s.newsletter_reward_pct,    10) || 5;
       console.log('[NOVA] discount settings:', { active: NEWSLETTER_CONFIG.discountActive, pct: NEWSLETTER_CONFIG.discountPct });
 
       /* Promo banner */
