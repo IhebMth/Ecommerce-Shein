@@ -452,12 +452,22 @@ function initNewsletterPopup() {
         try { localStorage.setItem(NEWSLETTER_CONFIG.storageKey, '1'); } catch(e) {}
         /* Close new-subscriber popup */
         overlay.classList.remove('open');
-        /* Generate fresh reward code and open returning popup */
-        setTimeout(() => {
+        /* Generate fresh reward code, save to DB, open returning popup */
+        setTimeout(async () => {
           if (typeof _openReturningPopup === 'function') {
             const _rOn  = NEWSLETTER_CONFIG.rewardActive === true;
             const _rPct = parseInt(NEWSLETTER_CONFIG.rewardPct, 10) || 3;
             const _rCode = _rOn ? ('NOVA' + _rPct + '-' + Math.random().toString(36).substring(2,7).toUpperCase()) : null;
+            /* Save the new reward code to DB immediately */
+            if (_rCode) {
+              try {
+                const _bu = (typeof BACKEND_URL !== 'undefined') ? BACKEND_URL : '';
+                await fetch(_bu + '/api/newsletter', {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ email, lang: _lang(), discount_code: _rCode }),
+                });
+              } catch(_) {}
+            }
             _openReturningPopup(email, _rCode);
           }
         }, 350);
