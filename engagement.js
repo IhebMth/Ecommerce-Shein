@@ -468,7 +468,8 @@ function initNewsletterPopup() {
                   body: JSON.stringify({ email, lang: _lang(), reward_pct: _rPct, discount_pct: _dPct }),
                 });
                 const _d = await _res.json();
-                if (_d.code) resolvedCode = _d.code;
+                if (_d.reward_code) resolvedCode = _d.reward_code;
+                else if (_d.discount_code) resolvedCode = _d.discount_code;
               } catch(_) {}
             }
             _openReturningPopup(email, resolvedCode);
@@ -979,7 +980,7 @@ function _showRetS2(code) {
   document.getElementById('nl-ret-s2').classList.remove('hidden');
   const el = document.getElementById('nl-ret-result');
 
-  if (code) { /* show code if it exists — discountActive only blocks new code generation */
+  if (code) { /* show reward code — only changes when admin changes reward % */
     const _oc  = 'var el=this;navigator.clipboard&&navigator.clipboard.writeText(el.dataset.code);'
       + "el.style.background='var(--accent)';el.style.color='#fff';"
       + "setTimeout(function(){el.style.background='';el.style.color='';},1200)";
