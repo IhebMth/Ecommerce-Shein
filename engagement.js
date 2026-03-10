@@ -471,7 +471,29 @@ function initNewsletterPopup() {
             }
           }, 350);
         }
-        /* reward OFF → new popup already closed, nothing shown — correct */
+        /* reward OFF → show a small warm message popup (no code, just acknowledgement) */
+        if (NEWSLETTER_CONFIG.rewardActive !== true) {
+          setTimeout(() => {
+            _buildReturningPopup();
+            document.getElementById('nl-ret-s1').style.display   = 'none';
+            document.getElementById('nl-ret-hero').style.display = 'none';
+            document.getElementById('nl-ret-s2').classList.remove('hidden');
+            const L   = _lang();
+            const el  = document.getElementById('nl-ret-result');
+            if (el) el.innerHTML =
+              '<div style="text-align:center;padding:1.8rem 1rem">'
+              + '<div style="font-size:2.2rem;margin-bottom:0.8rem">💌</div>'
+              + '<p style="font-size:1rem;font-weight:600;color:var(--text-primary);margin-bottom:0.5rem">'
+              + (L === 'ar' ? 'مرحباً بعودتك!' : 'Welcome back!')
+              + '</p><p style="font-size:0.84rem;color:var(--text-muted);line-height:1.6">'
+              + (L === 'ar'
+                ? 'أنت بالفعل مشترك في قائمتنا 🎉<br>ستكون أول من يعلم عند صدور عروض جديدة.'
+                : "You're already on our list 🎉<br>You'll be the first to know when new offers drop.")
+              + '</p></div>';
+            _retOverlay.classList.add('open');
+            setTimeout(() => _retOverlay.classList.remove('open'), 3500);
+          }, 350);
+        }
         return;
       }
 
