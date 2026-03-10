@@ -452,23 +452,26 @@ function initNewsletterPopup() {
         try { localStorage.setItem(NEWSLETTER_CONFIG.storageKey, '1'); } catch(e) {}
         /* Close new-subscriber popup */
         overlay.classList.remove('open');
-        /* Generate fresh reward code, save to DB, open returning popup */
+        /* Ask API for updated code — API only regenerates if offer % changed */
         setTimeout(async () => {
           if (typeof _openReturningPopup === 'function') {
             const _rOn  = NEWSLETTER_CONFIG.rewardActive === true;
-            const _rPct = parseInt(NEWSLETTER_CONFIG.rewardPct, 10) || 3;
-            const _rCode = _rOn ? ('NOVA' + _rPct + '-' + Math.random().toString(36).substring(2,7).toUpperCase()) : null;
-            /* Save the new reward code to DB immediately */
-            if (_rCode) {
+            const _rPct = _rOn ? (parseInt(NEWSLETTER_CONFIG.rewardPct, 10) || 3) : 0;
+            const _dPct = (NEWSLETTER_CONFIG.discountActive === true || NEWSLETTER_CONFIG.discountActive === 'true')
+              ? (parseInt(NEWSLETTER_CONFIG.discountPct, 10) || 10) : 0;
+            let resolvedCode = apiData.code || null;
+            if (_rPct || _dPct) {
               try {
-                const _bu = (typeof BACKEND_URL !== 'undefined') ? BACKEND_URL : '';
-                await fetch(_bu + '/api/newsletter', {
+                const _bu  = (typeof BACKEND_URL !== 'undefined') ? BACKEND_URL : '';
+                const _res = await fetch(_bu + '/api/newsletter', {
                   method: 'POST', headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ email, lang: _lang(), discount_code: _rCode }),
+                  body: JSON.stringify({ email, lang: _lang(), reward_pct: _rPct, discount_pct: _dPct }),
                 });
+                const _d = await _res.json();
+                if (_d.code) resolvedCode = _d.code;
               } catch(_) {}
             }
-            _openReturningPopup(email, _rCode);
+            _openReturningPopup(email, resolvedCode);
           }
         }, 350);
         return;
@@ -949,17 +952,19 @@ function _buildReturningPopup() {
     const btn = document.getElementById('nl-ret-btn');
     btn.disabled = true;
     btn.textContent = _lang() === 'ar' ? '\u062c\u0627\u0631\u064d...' : 'Loading\u2026';
-    /* Returning popup always generates with rewardPct — independent of new-subscriber discountActive */
-    const _pct  = parseInt(NEWSLETTER_CONFIG.rewardPct, 10) || parseInt(NEWSLETTER_CONFIG.discountPct, 10) || 10;
-    const _nc   = 'NOVA' + _pct + '-' + Math.random().toString(36).substring(2,7).toUpperCase();
+    /* Send current offer pcts — API decides if code needs updating */
+    const _rOn  = NEWSLETTER_CONFIG.rewardActive === true;
+    const _rPct = _rOn ? (parseInt(NEWSLETTER_CONFIG.rewardPct, 10) || 3) : 0;
+    const _dPct = (NEWSLETTER_CONFIG.discountActive === true || NEWSLETTER_CONFIG.discountActive === 'true')
+      ? (parseInt(NEWSLETTER_CONFIG.discountPct, 10) || 10) : 0;
     try {
       const bu  = (typeof BACKEND_URL !== 'undefined') ? BACKEND_URL : '';
       const res = await fetch(bu + '/api/newsletter', {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ email, lang: _lang(), discount_code: _nc }),
+        body: JSON.stringify({ email, lang: _lang(), reward_pct: _rPct, discount_pct: _dPct }),
       });
       const data = await res.json();
-      _showRetS2(data.code || null); /* always use what DB has, ignore locally generated if disc OFF */
+      _showRetS2(data.code || null);
     } catch(_) { _showRetS2(null); }
   });
 }
