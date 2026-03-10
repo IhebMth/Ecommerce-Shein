@@ -944,7 +944,7 @@ function _buildReturningPopup() {
         body: JSON.stringify({ email, lang: _lang(), discount_code: _nc }),
       });
       const data = await res.json();
-      _showRetS2(data.code || _nc || null);
+      _showRetS2(data.code || null); /* always use what DB has, ignore locally generated if disc OFF */
     } catch(_) { _showRetS2(null); }
   });
 }
@@ -958,7 +958,7 @@ function _showRetS2(code) {
   document.getElementById('nl-ret-s2').classList.remove('hidden');
   const el = document.getElementById('nl-ret-result');
 
-  if (code && _dOn) {
+  if (code) { /* show code if it exists — discountActive only blocks new code generation */
     const _oc  = 'var el=this;navigator.clipboard&&navigator.clipboard.writeText(el.dataset.code);'
       + "el.style.background='var(--accent)';el.style.color='#fff';"
       + "setTimeout(function(){el.style.background='';el.style.color='';},1200)";
