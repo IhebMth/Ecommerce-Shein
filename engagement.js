@@ -72,6 +72,7 @@ const NEWSLETTER_CONFIG = {
   discountActive: true, /* overridden by API: newsletter_discount_active */
   discountPct: 10,      /* overridden by API: newsletter_discount_pct */
   rewardPct:   5,       /* overridden by API: newsletter_reward_pct */
+  rewardActive: false,  /* overridden by API: newsletter_reward_active */
 
   delayMs: 10000,
   repeatMs: 1 * 60 * 1000,
@@ -451,10 +452,13 @@ function initNewsletterPopup() {
         try { localStorage.setItem(NEWSLETTER_CONFIG.storageKey, '1'); } catch(e) {}
         /* Close new-subscriber popup */
         overlay.classList.remove('open');
-        /* Open returning popup after short pause, pre-filled with their code */
+        /* Generate fresh reward code and open returning popup */
         setTimeout(() => {
           if (typeof _openReturningPopup === 'function') {
-            _openReturningPopup(email, apiData.code || null);
+            const _rOn  = NEWSLETTER_CONFIG.rewardActive === true;
+            const _rPct = parseInt(NEWSLETTER_CONFIG.rewardPct, 10) || 3;
+            const _rCode = _rOn ? ('NOVA' + _rPct + '-' + Math.random().toString(36).substring(2,7).toUpperCase()) : null;
+            _openReturningPopup(email, _rCode);
           }
         }, 350);
         return;
@@ -935,9 +939,9 @@ function _buildReturningPopup() {
     const btn = document.getElementById('nl-ret-btn');
     btn.disabled = true;
     btn.textContent = _lang() === 'ar' ? '\u062c\u0627\u0631\u064d...' : 'Loading\u2026';
-    const _dOn  = NEWSLETTER_CONFIG.discountActive === true || NEWSLETTER_CONFIG.discountActive === 'true';
+    /* Returning popup always generates with rewardPct — independent of new-subscriber discountActive */
     const _pct  = parseInt(NEWSLETTER_CONFIG.rewardPct, 10) || parseInt(NEWSLETTER_CONFIG.discountPct, 10) || 10;
-    const _nc   = _dOn ? ('NOVA' + _pct + '-' + Math.random().toString(36).substring(2,7).toUpperCase()) : null;
+    const _nc   = 'NOVA' + _pct + '-' + Math.random().toString(36).substring(2,7).toUpperCase();
     try {
       const bu  = (typeof BACKEND_URL !== 'undefined') ? BACKEND_URL : '';
       const res = await fetch(bu + '/api/newsletter', {
@@ -1065,6 +1069,7 @@ async function initEngagement() {
       else NEWSLETTER_CONFIG.discountActive = true; /* key missing → default ON */
       if (s.newsletter_discount_pct    !== undefined) NEWSLETTER_CONFIG.discountPct    = parseInt(s.newsletter_discount_pct, 10) || 10;
       if (s.newsletter_reward_pct      !== undefined) NEWSLETTER_CONFIG.rewardPct      = parseInt(s.newsletter_reward_pct,    10) || 5;
+      if (s.newsletter_reward_active   !== undefined) NEWSLETTER_CONFIG.rewardActive   = s.newsletter_reward_active === true || s.newsletter_reward_active === 'true';
       console.log('[NOVA] discount settings:', { active: NEWSLETTER_CONFIG.discountActive, pct: NEWSLETTER_CONFIG.discountPct });
 
       /* Promo banner */
