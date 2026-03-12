@@ -56,6 +56,10 @@ const I18N = {
     'checkout.sending': 'Sending…',
     'checkout.summary': 'Order Summary',
     'checkout.orderTotal': 'Total',
+    'checkout.coupon': 'Discount Code',
+    'checkout.couponPH': 'e.g. NOVA10-AB3KF',
+    'checkout.couponApply': 'Apply',
+    'checkout.couponHave': 'Have a discount code?',
 
     /* success */
     'success.title': 'Order Placed!',
@@ -200,6 +204,10 @@ const I18N = {
     'checkout.sending': 'جارٍ الإرسال…',
     'checkout.summary': 'ملخص الطلب',
     'checkout.orderTotal': 'الإجمالي',
+    'checkout.coupon': 'كود الخصم',
+    'checkout.couponPH': 'مثال: NOVA10-AB3KF',
+    'checkout.couponApply': 'تطبيق',
+    'checkout.couponHave': 'هل لديك كود خصم؟',
 
     /* success */
     'success.title': 'تم تأكيد طلبك!',
