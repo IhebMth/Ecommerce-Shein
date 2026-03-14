@@ -85,7 +85,7 @@
       infoTab:'Account Info', pwTab:'Change Password',
       saveChanges:'Save Changes',
       uploadPhoto:'Choose Photo', removePhoto:'Remove Photo',
-      photoHint:'JPG, PNG or WEBP · max 3 MB',
+      photoHint:'JPG, PNG or WEBP · max 5 MB',
       saving:'Saving…', sending:'Please wait…',
       success:'Changes saved!',
       loginSuccess:'Welcome back,', signupSuccess:'Account created! Welcome,',
@@ -116,7 +116,7 @@
       infoTab:'معلومات الحساب', pwTab:'تغيير كلمة المرور',
       saveChanges:'حفظ التغييرات',
       uploadPhoto:'اختيار صورة', removePhoto:'حذف الصورة',
-      photoHint:'JPG أو PNG أو WEBP · بحد أقصى 3 ميغابايت',
+      photoHint:'JPG أو PNG أو WEBP · بحد أقصى 5 ميغابايت',
       saving:'جارٍ الحفظ…', sending:'يرجى الانتظار…',
       success:'تم حفظ التغييرات!',
       loginSuccess:'مرحباً بعودتك،', signupSuccess:'تم إنشاء الحساب! أهلاً،',
@@ -877,7 +877,7 @@
   function onFileChange(e) {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 3 * 1024 * 1024) { showProfileMsg('Image must be under 3 MB.', true); return; }
+    if (file.size > 5 * 1024 * 1024) { showProfileMsg('Image must be under 5 MB.', true); return; }
     const reader = new FileReader();
     reader.onload = ev => { _pendingB64 = ev.target.result; refreshAvatarUI(); };
     reader.readAsDataURL(file);
