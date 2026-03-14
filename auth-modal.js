@@ -28,9 +28,39 @@
      STATE
   ───────────────────────────────────────── */
   let _user       = null;
+  let _token      = null;  // JWT — stored in memory + sessionStorage backup
   let _screen     = 'login';
   let _resetIdent = '';
   let _pendingB64 = null; // base64 of new avatar, or 'REMOVE'
+
+  /* ─────────────────────────────────────────
+     TOKEN HELPERS
+  ───────────────────────────────────────── */
+  const _TOK_KEY = '_nva_tok';
+
+  function _saveToken(t) {
+    _token = t;
+    try { sessionStorage.setItem(_TOK_KEY, t); } catch(_e) {}
+  }
+
+  function _loadToken() {
+    if (_token) return _token;
+    try { _token = sessionStorage.getItem(_TOK_KEY); } catch(_e) {}
+    return _token;
+  }
+
+  function _clearToken() {
+    _token = null;
+    try { sessionStorage.removeItem(_TOK_KEY); } catch(_e) {}
+  }
+
+  /* Central fetch — always injects Authorization: Bearer <token> */
+  function _apiFetch(url, opts) {
+    const tok = _loadToken();
+    const headers = Object.assign({ 'Content-Type': 'application/json' }, opts && opts.headers || {});
+    if (tok) headers['Authorization'] = 'Bearer ' + tok;
+    return fetch(url, Object.assign({ credentials: 'include' }, opts, { headers }));
+  }
 
   /* ─────────────────────────────────────────
      TRANSLATIONS
@@ -865,13 +895,13 @@
     if (!identifier || !password) { showMsg(L('fillAll'), true); return; }
     setLoading('_nva-b-login', true); clearMsg();
     try {
-      const r = await fetch(API + '?action=login', {
-        method:'POST', credentials:'include',
-        headers:{'Content-Type':'application/json'},
+      const r = await _apiFetch(API + '?action=login', {
+        method:'POST',
         body: JSON.stringify({ identifier, password })
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || 'Login failed');
+      if (d.token) _saveToken(d.token);
       onLoggedIn(d.user);
       closeAuth();
       toast(`${L('loginSuccess')} ${d.user.first_name}! ✨`, true);
@@ -894,21 +924,19 @@
     if (pw !== cpw)          { showMsg(L('pwMismatch'), true); return; }
     setLoading('_nva-b-signup', true); clearMsg();
     try {
-      const r = await fetch(API + '?action=signup', {
-        method:'POST', credentials:'include',
-        headers:{'Content-Type':'application/json'},
+      const r = await _apiFetch(API + '?action=signup', {
+        method:'POST',
         body: JSON.stringify({ first_name:fn, last_name:ln, phone:ph, email:em, password:pw, city:ci, date_of_birth:dob, gender:gd })
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || 'Signup failed');
       // Auto-login
-      const lr = await fetch(API + '?action=login', {
-        method:'POST', credentials:'include',
-        headers:{'Content-Type':'application/json'},
+      const lr = await _apiFetch(API + '?action=login', {
+        method:'POST',
         body: JSON.stringify({ identifier:ph, password:pw })
       });
       const ld = await lr.json();
-      if (lr.ok && ld.user) onLoggedIn(ld.user);
+      if (lr.ok && ld.user) { if (ld.token) _saveToken(ld.token); onLoggedIn(ld.user); }
       closeAuth();
       toast(`${L('signupSuccess')} ${fn}! 🎉`, true);
     } catch(e) { showMsg(e.message, true); }
@@ -922,9 +950,8 @@
     if (!identifier||!city||!date_of_birth) { showMsg(L('fillAll'), true); return; }
     setLoading('_nva-b-verify', true); clearMsg();
     try {
-      const r = await fetch(API + '?action=forgot', {
-        method:'POST', credentials:'include',
-        headers:{'Content-Type':'application/json'},
+      const r = await _apiFetch(API + '?action=forgot', {
+        method:'POST',
         body: JSON.stringify({ identifier, city, date_of_birth })
       });
       const d = await r.json();
@@ -944,9 +971,8 @@
     if (np !== cp)      { showMsg(L('pwMismatch'), true); return; }
     setLoading('_nva-b-reset', true); clearMsg();
     try {
-      const r = await fetch(API + '?action=reset_password', {
-        method:'PATCH', credentials:'include',
-        headers:{'Content-Type':'application/json'},
+      const r = await _apiFetch(API + '?action=reset_password', {
+        method:'PATCH',
         body: JSON.stringify({ identifier:_resetIdent, new_password:np })
       });
       const d = await r.json();
@@ -958,7 +984,8 @@
   }
 
   async function doSignOut() {
-    try { await fetch(API + '?action=logout', { method:'POST', credentials:'include' }); } catch(_){}
+    try { await _apiFetch(API + '?action=logout', { method:'POST' }); } catch(_){}
+    _clearToken();
     onLoggedOut(); toast(L('signOut') + ' ✓');
   }
 
@@ -978,9 +1005,8 @@
     else if (_pendingB64?.startsWith('data:')) body.avatar_url = _pendingB64;
     setLoading('_nva-save-info', true); clearProfileMsg();
     try {
-      const r = await fetch(`${API}/${_user.id}`, {
-        method:'PATCH', credentials:'include',
-        headers:{'Content-Type':'application/json'},
+      const r = await _apiFetch(`${API}/${_user.id}`, {
+        method:'PATCH',
         body: JSON.stringify(body)
       });
       const d = await r.json();
@@ -1006,15 +1032,13 @@
     setLoading('_nva-save-pw', true); clearProfileMsg();
     try {
       // Verify current password first
-      const vr = await fetch(API + '?action=login', {
-        method:'POST', credentials:'include',
-        headers:{'Content-Type':'application/json'},
+      const vr = await _apiFetch(API + '?action=login', {
+        method:'POST',
         body: JSON.stringify({ identifier: _user.phone || _user.email, password: cur })
       });
       if (!vr.ok) throw new Error(L('currentPwWrong'));
-      const r = await fetch(`${API}/${_user.id}`, {
-        method:'PATCH', credentials:'include',
-        headers:{'Content-Type':'application/json'},
+      const r = await _apiFetch(`${API}/${_user.id}`, {
+        method:'PATCH',
         body: JSON.stringify({ password: np })
       });
       const d = await r.json();
@@ -1029,9 +1053,10 @@
      SESSION RESTORE
   ───────────────────────────────────────── */
   async function restoreSession() {
+    if (!_loadToken()) return; // no token = no session to restore
     try {
-      const r = await fetch(API + '?action=me', { credentials:'include' });
-      if (!r.ok) return;
+      const r = await _apiFetch(API + '?action=me');
+      if (!r.ok) { _clearToken(); return; }
       const u = await r.json();
       if (u?.id) onLoggedIn(u);
     } catch(_) {}
