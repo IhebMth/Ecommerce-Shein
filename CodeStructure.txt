@@ -1,0 +1,69 @@
+nova-store/                          ← your root project folder
+│
+├── index.html
+├── styles.css
+├── extras.css
+├── products.js
+├── shop.js
+├── modal.js
+├── cart.js
+├── checkout.js
+├── reviews.js
+├── engagement.js
+├── analytics.js
+├── lang.js
+├── i18n.js
+├── darktheme.js
+├── trustbar.js
+├── infosections.js
+│
+├── .env                             ← LOCAL ONLY, never commit
+├── .env.example
+├── .gitignore
+├── vercel.json
+├── package.json
+│
+├── database/
+│   ├── schema.sql                   ← generated below ↓
+│   ├── seed.sql                     ← Phase 2
+│   ├── create-admin.js              ← Phase 1
+│   └── nova.db                      ← LOCAL ONLY, auto-created
+│
+├── api/
+│   ├── _lib/
+│   │   ├── db.js
+│   │   ├── auth.js
+│   │   ├── rate-limit.js
+│   │   └── cors.js
+│   ├── auth/
+│   │   └── login.js
+│   ├── orders/
+│   │   ├── index.js
+│   │   └── [id].js
+│   ├── products/
+│   │   ├── index.js
+│   │   └── [id].js
+│   ├── categories/
+│   │   └── index.js
+│   ├── reviews/
+│   │   └── index.js
+│   └── newsletter/
+│       └── index.js
+│
+└── admin/
+    ├── index.html                   ← login page
+    ├── dashboard.html
+    ├── orders.html
+    ├── products.html
+    ├── categories.html
+    ├── reviews.html
+    ├── newsletter.html
+    ├── css/
+    │   └── admin.css
+    └── js/
+        ├── admin-auth.js
+        ├── admin-orders.js
+        ├── admin-products.js
+        ├── admin-categories.js
+        ├── admin-reviews.js
+        └── admin-newsletter.js

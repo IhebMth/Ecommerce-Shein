@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="56" viewBox="0 0 220 56">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8C87A"/>
+      <stop offset="100%" stop-color="#B8892E"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C9A96E"/>
+      <stop offset="100%" stop-color="#E8C87A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Speed lines (motion) -->
+  <line x1="2" y1="20" x2="14" y2="20" stroke="#C9A96E" stroke-width="1.5" opacity="0.7" stroke-linecap="round"/>
+  <line x1="0" y1="27" x2="16" y2="27" stroke="#C9A96E" stroke-width="1.5" opacity="0.45" stroke-linecap="round"/>
+  <line x1="2" y1="34" x2="13" y2="34" stroke="#C9A96E" stroke-width="1.5" opacity="0.25" stroke-linecap="round"/>
+
+  <!-- Runner body -->
+  <polygon points="18,10 30,42 40,39 26,7" fill="url(#g1)"/>
+  <!-- Head -->
+  <circle cx="22" cy="4" r="7" fill="url(#g1)"/>
+  <!-- Front leg -->
+  <path d="M30,42 Q34,52 30,62" stroke="#C9A96E" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- Back leg kicked high -->
+  <path d="M40,39 Q50,29 58,25" stroke="#C9A96E" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- Front arm -->
+  <path d="M24,18 Q18,30 14,36" stroke="#C9A96E" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Back arm -->
+  <path d="M26,16 Q35,11 42,7" stroke="#C9A96E" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+  <!-- STRIDE text -->
+  <text x="64" y="37" font-family="Arial Black, Arial, sans-serif" font-size="30" font-weight="900" fill="url(#g1)" letter-spacing="2">STRIDE</text>
+
+  <!-- TN badge -->
+  <rect x="181" y="10" width="36" height="24" rx="5" fill="#C9A96E"/>
+  <text x="199" y="28" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="15" font-weight="900" fill="#1a1a2e">TN</text>
+
+  <!-- Gold underline -->
+  <rect x="64" y="41" width="153" height="2" rx="1" fill="url(#g2)" opacity="0.65"/>
+
+  <!-- Tagline -->
+  <text x="140" y="53" text-anchor="middle" font-family="Arial, sans-serif" font-size="7.5" font-weight="500" fill="#888888" letter-spacing="3">RUN YOUR LIMIT</text>
+</svg>
