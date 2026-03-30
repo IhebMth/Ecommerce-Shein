@@ -149,7 +149,18 @@ function _t(obj) {
 function initPromoBanner() {
   if (!PROMO_CONFIG.active) return;
   try {
-    if (localStorage.getItem(PROMO_CONFIG.storageKey)) return; /* dismissed */
+    const dismissed    = localStorage.getItem(PROMO_CONFIG.storageKey);
+    const dismissedFor = localStorage.getItem(PROMO_CONFIG.storageKey + '_text');
+    const currentText  = PROMO_CONFIG.text.en + '||' + PROMO_CONFIG.text.ar;
+    if (dismissed) {
+      if (dismissedFor !== currentText) {
+        /* Admin updated the banner text — reset dismiss and show again */
+        localStorage.removeItem(PROMO_CONFIG.storageKey);
+        localStorage.removeItem(PROMO_CONFIG.storageKey + '_text');
+      } else {
+        return; /* same text, still dismissed */
+      }
+    }
   } catch(e) {}
 
   const banner = document.createElement('div');
@@ -215,6 +226,14 @@ function initPromoBanner() {
 
   _updatePromoBanner();
 
+  /* Also sync the static #announcement-banner in index.html */
+  try {
+    const staticText = document.getElementById('announcement-banner-text');
+    if (staticText) staticText.innerHTML = PROMO_CONFIG.text.en;
+    const staticBanner = document.getElementById('announcement-banner');
+    if (staticBanner && !PROMO_CONFIG.active) staticBanner.style.display = 'none';
+  } catch(e) {}
+
   document.getElementById('promo-close').addEventListener('click', () => {
     banner.style.transition = 'opacity 0.25s, max-height 0.35s, padding 0.35s';
     banner.style.opacity    = '0';
@@ -222,7 +241,10 @@ function initPromoBanner() {
     banner.style.padding    = '0';
     banner.style.overflow   = 'hidden';
     setTimeout(() => banner.remove(), 380);
-    try { localStorage.setItem(PROMO_CONFIG.storageKey, '1'); } catch(e) {}
+    try {
+      localStorage.setItem(PROMO_CONFIG.storageKey, '1');
+      localStorage.setItem(PROMO_CONFIG.storageKey + '_text', PROMO_CONFIG.text.en + '||' + PROMO_CONFIG.text.ar);
+    } catch(e) {}
   });
 
   const ctaBtn = document.getElementById('promo-cta');
@@ -1124,8 +1146,45 @@ async function initEngagement() {
       if (s.sale_timer_end_date   !== undefined) SALE_CONFIG.endDate     = s.sale_timer_end_date;
       if (s.sale_timer_label_en   !== undefined) SALE_CONFIG.label.en    = s.sale_timer_label_en;
       if (s.sale_timer_label_ar   !== undefined) SALE_CONFIG.label.ar    = s.sale_timer_label_ar;
+
+      /* WhatsApp float button */
+      const waBtn = document.getElementById('whatsapp-float');
+      if (waBtn) {
+        if (s.whatsapp_active !== undefined)
+          waBtn.style.display = s.whatsapp_active === 'true' ? 'flex' : 'none';
+        if (s.whatsapp_phone) {
+          const phone = String(s.whatsapp_phone).replace(/[^0-9+]/g, '');
+          waBtn.href = 'https://wa.me/' + phone;
+        }
+      }
+
+      /* Footer social links visibility */
+      const footerSocials = document.getElementById('footer-socials');
+      if (footerSocials && s.footer_socials_active !== undefined)
+        footerSocials.style.display = s.footer_socials_active === 'true' ? '' : 'none';
+
+      const socialMap = {
+        instagram: { active: s.instagram_active, url: s.instagram_url },
+        facebook:  { active: s.facebook_active,  url: s.facebook_url  },
+        tiktok:    { active: s.tiktok_active,     url: s.tiktok_url    },
+      };
+      Object.entries(socialMap).forEach(([name, cfg]) => {
+        const el = document.getElementById('social-' + name);
+        if (!el) return;
+        if (cfg.active !== undefined) el.style.display = cfg.active === 'true' ? '' : 'none';
+        if (cfg.url)                  el.href = cfg.url;
+      });
+
+      /* Signup modal → override newsletter config */
+      if (s.signup_modal_active       !== undefined) NEWSLETTER_CONFIG.active       = s.signup_modal_active === 'true';
+      if (s.signup_modal_delay        !== undefined) NEWSLETTER_CONFIG.delayMs      = (parseInt(s.signup_modal_delay, 10) || 60) * 1000;
+      if (s.signup_modal_discount_pct !== undefined) NEWSLETTER_CONFIG.discountPct  = parseInt(s.signup_modal_discount_pct, 10) || 10;
+      if (s.signup_modal_title_en     !== undefined) NEWSLETTER_CONFIG.heading.en   = s.signup_modal_title_en;
+      if (s.signup_modal_title_ar     !== undefined) NEWSLETTER_CONFIG.heading.ar   = s.signup_modal_title_ar;
     }
-  } catch (_) { /* silent — use hardcoded defaults */ }
+  } catch (err) {
+    console.warn('[NOVA settings] Could not load settings from API:', err.message, '— using defaults');
+  }
 
   initPromoBanner();
   initCountdown();
