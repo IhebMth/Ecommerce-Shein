@@ -517,35 +517,43 @@ function normalizeProduct(p) {
   /* Pick display name based on current language */
   const displayName = (lang === 'ar' && p.name_ar) ? p.name_ar : (p.name_en || p.name || '');
 
-  /* Flatten all images from all colors into a simple array */
+  /* Build per-color image arrays AND a flat images array for the modal */
   const images = [];
   const colorsNorm = [];
   if (Array.isArray(p.colors) && p.colors.length) {
     p.colors.forEach(c => {
-      const colorName = (lang === 'ar' && c.name_ar) ? c.name_ar : (c.name_en || c.name || '');
-      colorsNorm.push({ hex: c.hex || '#ccc', name: colorName });
+      /* Handle {name_en/name_ar} (backend) AND {name:{en,ar}} (static products) */
+      let colorName;
+      if (c.name && typeof c.name === 'object') {
+        colorName = (lang === 'ar' && c.name.ar) ? c.name.ar : (c.name.en || '');
+      } else {
+        colorName = (lang === 'ar' && c.name_ar) ? c.name_ar : (c.name_en || String(c.name || ''));
+      }
+      /* Collect this color's images */
+      const colorImages = [];
       if (Array.isArray(c.images)) {
         c.images.forEach(img => {
           const url = typeof img === 'string' ? img : img.url;
-          if (url) images.push(url);
+          if (url) { colorImages.push(url); images.push(url); }
         });
       }
+      colorsNorm.push({ hex: c.hex || '#ccc', name: colorName, images: colorImages });
     });
   }
   /* Fallback: if product has a top-level image field */
   if (!images.length && p.image) images.push(p.image);
 
-  /* Normalize sizes */
+  /* Normalize sizes — handle both backend objects {size_label, stock} and static string arrays */
   const sizesNorm = Array.isArray(p.sizes)
     ? p.sizes.map(s => {
-        /* Backend returns objects: {size_label, stock} */
         if (s && typeof s === 'object') {
           return { name: s.size_label || s.name || '', stock: s.stock ?? 0 };
         }
-        /* Static products: sizes is plain string array ['XS','S',…]
-           Get per-size stock from sizeStock map, fallback to overall stock */
+        /* Plain string size like 'XS' or '36' — look up stock in sizeStock map */
         const sName = String(s);
-        const perSizeStock = p.sizeStock ? (p.sizeStock[sName] ?? p.stock ?? 999) : (p.stock ?? 999);
+        const perSizeStock = p.sizeStock
+          ? (p.sizeStock[sName] !== undefined ? p.sizeStock[sName] : (p.stock ?? 999))
+          : (p.stock ?? 999);
         return { name: sName, stock: perSizeStock };
       })
     : [];
@@ -563,7 +571,9 @@ function normalizeProduct(p) {
     name:          displayName,
     name_en:       p.name_en || '',
     name_ar:       p.name_ar || '',
-    description:   (lang === 'ar' && p.desc_ar) ? p.desc_ar : (p.desc_en || p.description || ''),
+    description:   (lang === 'ar')
+      ? (p.desc_ar || (p.desc && p.desc.ar) || p.desc_en || (p.desc && p.desc.en) || p.description || '')
+      : (p.desc_en || (p.desc && p.desc.en) || p.description || ''),
     price:         parseFloat(p.price) || 0,
     originalPrice: p.old_price ? parseFloat(p.old_price) : (p.originalPrice ? parseFloat(p.originalPrice) : null),
     stock:         p.stock ?? 999,
@@ -715,7 +725,10 @@ function openModal(id) {
   selectedColor = null;
   selectedSize  = null;
 
-  const imgs = p.images || (p.image ? [p.image] : []);
+  /* Use first color's images if available, else fall back to flat images array */
+  const _firstColorImgs = (p.colors && p.colors[0] && p.colors[0].images && p.colors[0].images.length)
+    ? p.colors[0].images : null;
+  const imgs = _firstColorImgs || p.images || (p.image ? [p.image] : []);
   document.getElementById('modalMainImg').src       = imgs[0] || '';
   document.getElementById('modalMainImg').alt       = p.name;
   document.getElementById('modalCat').textContent   = p.category || '';
@@ -734,7 +747,7 @@ function openModal(id) {
   else if (stock < 5) { stockEl.textContent = `Only ${stock} left!`; stockEl.className = 'modal-stock stock-low'; }
   else { stockEl.textContent = 'In stock'; stockEl.className = 'modal-stock stock-ok'; }
 
-  // Thumbnails
+  // Thumbnails — use per-color images
   const thumbs = document.getElementById('modalThumbs');
   thumbs.innerHTML = imgs.map((src,i) => `
     <div class="modal-thumb ${i===0?'active':''}" onclick="switchThumb(this,'${src}')">
@@ -744,16 +757,17 @@ function openModal(id) {
   // Colors
   const colors = p.colors || [];
   const colorSec = document.getElementById('colorSection');
-  if (colors.length) {
+  if (colors.length > 1) {
     colorSec.style.display = '';
     document.getElementById('selectedColorName').textContent = '';
     document.getElementById('colorPalette').innerHTML = colors.map((c,i) => `
       <div class="color-swatch ${i===0?'active':''}"
-           style="background:${c.hex||c}"
-           title="${c.name||c}"
-           onclick="selectColor(this,'${c.name||c}')">
+           style="background:${c.hex||'#ccc'}"
+           title="${c.name||''}"
+           data-color-idx="${i}"
+           onclick="selectColor(this,'${c.name||''}',${i})">
       </div>`).join('');
-    selectedColor = colors[0]?.name || colors[0];
+    selectedColor = colors[0]?.name || '';
     document.getElementById('selectedColorName').textContent = selectedColor;
   } else { colorSec.style.display = 'none'; }
 
@@ -790,11 +804,29 @@ function switchThumb(el, src) {
   setTimeout(() => { img.src = src; img.classList.remove('fade'); }, 200);
 }
 
-function selectColor(el, name) {
+function selectColor(el, name, colorIdx) {
   document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
   el.classList.add('active');
   selectedColor = name;
   document.getElementById('selectedColorName').textContent = name;
+
+  /* Update modal images to this color's images */
+  if (currentModal && colorIdx !== undefined) {
+    const c = currentModal.colors[colorIdx];
+    const colorImgs = (c && c.images && c.images.length) ? c.images : currentModal.images;
+    if (colorImgs && colorImgs.length) {
+      /* Update main image */
+      const mainImg = document.getElementById('modalMainImg');
+      mainImg.classList.add('fade');
+      setTimeout(() => { mainImg.src = colorImgs[0]; mainImg.classList.remove('fade'); }, 200);
+      /* Update thumbnails */
+      const thumbs = document.getElementById('modalThumbs');
+      thumbs.innerHTML = colorImgs.map((src, i) => `
+        <div class="modal-thumb ${i===0?'active':''}" onclick="switchThumb(this,'${src}')">
+          <img src="${src}" alt="view ${i+1}" loading="lazy" />
+        </div>`).join('');
+    }
+  }
 }
 
 function selectSize(el, name) {
@@ -1036,7 +1068,7 @@ fetchProducts().then(checkDeepLink);
 <!-- ════════════════════════════════════════
      AUTH MODAL — Sign In / Sign Up / Profile chip
      Must load AFTER the main inline script so
-     window.setLang and window.openCheckout exist.
+     window.setLang and window.openCheckout already exist.
 ════════════════════════════════════════ -->
 <script src="auth-modal.js"></script>
 
