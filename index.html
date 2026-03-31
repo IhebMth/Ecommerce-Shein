@@ -785,7 +785,9 @@ function openModal(id) {
   } else { sizeSec.style.display = 'none'; }
 
   document.getElementById('addToCartBtn').textContent = T[lang].addToCart;
-  document.getElementById('addToCartBtn').disabled = stock === 0;
+  /* Disable if out of stock OR if product has sizes and none selected yet */
+  const _hasSizes = (p.sizes || []).length > 0;
+  document.getElementById('addToCartBtn').disabled = (stock === 0) || _hasSizes;
 
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -833,6 +835,9 @@ function selectSize(el, name) {
   document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
   selectedSize = name;
+  /* Re-enable Add to Cart now that a size is chosen */
+  const btn = document.getElementById('addToCartBtn');
+  if (btn) btn.disabled = false;
 }
 
 function addToCartFromModal() {
