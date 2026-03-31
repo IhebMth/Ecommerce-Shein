@@ -22,7 +22,7 @@
   /* ─────────────────────────────────────────
      CONFIG
   ───────────────────────────────────────── */
-  const API = 'https://nova-backend-one.vercel.app/api/users';
+  const API = 'https://stridetnbackend.vercel.app/api/users';
 
   /* ─────────────────────────────────────────
      STATE

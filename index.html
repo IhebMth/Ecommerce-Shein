@@ -502,18 +502,85 @@ function setLang(l) {
   document.getElementById('searchInput').placeholder     = t.searchPlaceholder;
   renderCart();
   renderWish();
+  /* Re-normalize product names for the new language and re-render */
+  if (allProducts.length) {
+    allProducts = allProducts.map(p => normalizeProduct(p));
+    applyFilters();
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
    FETCH PRODUCTS
 ══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════
+   NORMALIZE SUPABASE PRODUCT → legacy frontend schema
+   Supabase returns:  { id, name_en, name_ar, old_price, colors:[{hex, name_en, images:[{url}]}], sizes:[{size_label, stock}] }
+   Frontend expects:  { _id, name, images[], originalPrice, colors:[{hex,name}], sizes:[{name,stock}] }
+══════════════════════════════════════════════════════════════ */
+function normalizeProduct(p) {
+  /* Pick display name based on current language */
+  const displayName = (lang === 'ar' && p.name_ar) ? p.name_ar : (p.name_en || p.name || '');
+
+  /* Flatten all images from all colors into a simple array */
+  const images = [];
+  const colorsNorm = [];
+  if (Array.isArray(p.colors) && p.colors.length) {
+    p.colors.forEach(c => {
+      const colorName = (lang === 'ar' && c.name_ar) ? c.name_ar : (c.name_en || c.name || '');
+      colorsNorm.push({ hex: c.hex || '#ccc', name: colorName });
+      if (Array.isArray(c.images)) {
+        c.images.forEach(img => {
+          const url = typeof img === 'string' ? img : img.url;
+          if (url) images.push(url);
+        });
+      }
+    });
+  }
+  /* Fallback: if product has a top-level image field */
+  if (!images.length && p.image) images.push(p.image);
+
+  /* Normalize sizes */
+  const sizesNorm = Array.isArray(p.sizes)
+    ? p.sizes.map(s => ({
+        name:  s.size_label || s.name || s,
+        stock: s.stock ?? 0
+      }))
+    : [];
+
+  /* Category: fetch slug or name */
+  /* category: use slug from joined categories table (backend), fallback to any existing field */
+  const category = p.category_slug
+    || (p.categories && p.categories.slug)
+    || p.category
+    || '';
+
+  return {
+    _id:           String(p.id || p._id || ''),
+    id:            p.id || p._id,
+    name:          displayName,
+    name_en:       p.name_en || '',
+    name_ar:       p.name_ar || '',
+    description:   (lang === 'ar' && p.desc_ar) ? p.desc_ar : (p.desc_en || p.description || ''),
+    price:         parseFloat(p.price) || 0,
+    originalPrice: p.old_price ? parseFloat(p.old_price) : (p.originalPrice ? parseFloat(p.originalPrice) : null),
+    stock:         p.stock ?? 999,
+    category:      category,
+    active:        p.active !== false,
+    images,
+    colors:        colorsNorm,
+    sizes:         sizesNorm,
+  };
+}
+
 async function fetchProducts() {
   try {
-    const res  = await fetch(`${API_BASE}/api/products`);
+    const res  = await fetch(`${API_BASE}/api/products?limit=200`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    allProducts = Array.isArray(data) ? data : (data.products || []);
+    const raw  = Array.isArray(data) ? data : (data.products || []);
+    allProducts = raw.map(normalizeProduct);
   } catch (e) {
-    console.warn('Could not fetch products:', e);
+    console.warn('[StrideTN] Could not fetch products:', e.message);
     allProducts = [];
   }
   applyFilters();
@@ -544,8 +611,11 @@ function applyFilters() {
 
   let list = allProducts.filter(p => {
     const catMatch  = currentCat === 'all' || (p.category || '').toLowerCase() === currentCat;
-    const nameMatch = !q || (p.name || '').toLowerCase().includes(q)
-                         || (p.description || '').toLowerCase().includes(q);
+    const nameMatch = !q
+      || (p.name    || '').toLowerCase().includes(q)
+      || (p.name_en || '').toLowerCase().includes(q)
+      || (p.name_ar || '').includes(q)
+      || (p.description || '').toLowerCase().includes(q);
     return catMatch && nameMatch;
   });
 

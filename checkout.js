@@ -138,7 +138,7 @@ function _buildSummary() {
 }
 
 async function applyCode() {
-  const BACKEND_URL = "https://nova-backend-one.vercel.app";
+  const BACKEND_URL = "https://stridetnbackend.vercel.app";
   if (_codeChecking) return;
 
   const input = document.getElementById('c-code');
@@ -227,7 +227,7 @@ function closeCheckout() {
 }
 
 async function placeOrder() {
-  const BACKEND_URL = "https://nova-backend-one.vercel.app";
+  const BACKEND_URL = "https://stridetnbackend.vercel.app";
 
   const name    = document.getElementById('c-name')?.value.trim() || '';
   const phone   = document.getElementById('c-phone')?.value.trim() || '';
