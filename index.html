@@ -424,10 +424,6 @@
      DARKTHEME.JS
 ════════════════════════════════════════ -->
 <script src="darktheme.js"></script>
-<script>
-  // Wire theme toggle button (darktheme.js exposes toggleTheme globally)
-  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-</script>
 
 <!-- ════════════════════════════════════════
      MAIN STORE SCRIPT
@@ -541,10 +537,17 @@ function normalizeProduct(p) {
 
   /* Normalize sizes */
   const sizesNorm = Array.isArray(p.sizes)
-    ? p.sizes.map(s => ({
-        name:  s.size_label || s.name || s,
-        stock: s.stock ?? 0
-      }))
+    ? p.sizes.map(s => {
+        /* Backend returns objects: {size_label, stock} */
+        if (s && typeof s === 'object') {
+          return { name: s.size_label || s.name || '', stock: s.stock ?? 0 };
+        }
+        /* Static products: sizes is plain string array ['XS','S',…]
+           Get per-size stock from sizeStock map, fallback to overall stock */
+        const sName = String(s);
+        const perSizeStock = p.sizeStock ? (p.sizeStock[sName] ?? p.stock ?? 999) : (p.stock ?? 999);
+        return { name: sName, stock: perSizeStock };
+      })
     : [];
 
   /* Category: fetch slug or name */
@@ -1021,11 +1024,21 @@ function checkDeepLink() {
 /* ══════════════════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════════════════ */
+/* Expose on window so auth-modal.js hookLang() and patchCheckout() can wrap them */
+window.setLang      = setLang;
+window.openCheckout = openCheckout;
 updateBadges();
 renderCart();
 renderWish();
 fetchProducts().then(checkDeepLink);
 </script>
+
+<!-- ════════════════════════════════════════
+     AUTH MODAL — Sign In / Sign Up / Profile chip
+     Must load AFTER the main inline script so
+     window.setLang and window.openCheckout exist.
+════════════════════════════════════════ -->
+<script src="auth-modal.js"></script>
 
 <!-- WhatsApp Float Button (shown/hidden by settings) -->
 <a id="whatsapp-float" href="https://wa.me/" target="_blank" rel="noopener"
