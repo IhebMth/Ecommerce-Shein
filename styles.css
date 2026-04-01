@@ -1071,3 +1071,72 @@ body[dir="rtl"] .qa-label { letter-spacing: 0; }
   stroke: currentColor; fill: none;
   stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
 }
+
+/* ═══════════════════════════════════════════════════════
+   SEO & VISUAL IMPROVEMENTS — appended, nothing overridden
+═══════════════════════════════════════════════════════ */
+
+/* Product card — smoother hover lift */
+.product-card:hover {
+  box-shadow: 0 16px 40px rgba(0,0,0,0.18),
+              0 0 0 1px rgba(201,169,110,0.12);
+}
+[data-theme="dark"] .product-card:hover {
+  box-shadow: 0 16px 40px rgba(0,0,0,0.55),
+              0 0 0 1px rgba(201,169,110,0.18);
+}
+
+/* Section title gold underline accent */
+.section-title {
+  position: relative;
+  display: inline-block;
+}
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  width: 48px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
+/* Hero min-height so it always fills viewport nicely */
+#hero {
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Focus ring — accessibility + looks good */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* Toast — pill shape */
+.toast {
+  border-radius: 100px;
+  font-weight: 500;
+}
+
+/* Scroll progress shimmer */
+#scroll-progress {
+  background: linear-gradient(90deg, var(--accent) 0%, #f0d080 50%, var(--accent) 100%);
+  background-size: 200% 100%;
+  animation: progressShimmer 2s linear infinite;
+}
+@keyframes progressShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: 0% 0; }
+}
+
+/* Modal entrance — springier */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
