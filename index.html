@@ -1,12 +1,100 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" prefix="og: https://ogp.me/ns#">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>StrideTN — Run Your Limit</title>
-  <meta name="description" content="StrideTN — Premium sportswear & fashion. Style that speaks before you do." />
+
+  <!-- ══ PRIMARY SEO ══ -->
+  <title>StrideTN — Premium Sportswear & Fashion | Tunisia</title>
+  <meta name="description" content="StrideTN — Premium sportswear, leggings, shoes, and accessories. Free delivery in Tunisia. Cash on Delivery. Shop the latest styles now." />
+  <meta name="keywords" content="StrideTN, sportswear Tunisia, leggings Tunisia, fashion online Tunisia, arm sleeves, running gear, activewear" />
+  <meta name="author" content="StrideTN" />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <link rel="canonical" href="https://stridetn.vercel.app/" />
+
+  <!-- ══ OPEN GRAPH (Facebook, WhatsApp, LinkedIn) ══ -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="StrideTN" />
+  <meta property="og:title"       content="StrideTN — Premium Sportswear & Fashion" />
+  <meta property="og:description" content="Premium sportswear, leggings, shoes & accessories. Cash on Delivery in Tunisia. Style That Speaks Before You Do." />
+  <meta property="og:url"         content="https://stridetn.vercel.app/" />
+  <meta property="og:image"       content="https://stridetn.vercel.app/og-image.jpg" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale"      content="en_US" />
+  <meta property="og:locale:alternate" content="ar_TN" />
+
+  <!-- ══ TWITTER / X CARD ══ -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="StrideTN — Premium Sportswear & Fashion" />
+  <meta name="twitter:description" content="Premium sportswear, leggings, shoes & accessories. Cash on Delivery in Tunisia." />
+  <meta name="twitter:image"       content="https://stridetn.vercel.app/og-image.jpg" />
+
+  <!-- ══ THEME & APP META ══ -->
+  <meta name="theme-color" content="#C9A96E" />
+  <meta name="msapplication-TileColor" content="#0f0f0d" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="StrideTN" />
+
+  <!-- ══ FAVICON ══ -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><polygon points='32,4 58,18 58,46 32,60 6,46 6,18' fill='none' stroke='%23C9A96E' stroke-width='3'/><polygon points='24,14 33,34 40,31 31,11' fill='%23C9A96E'/><circle cx='27' cy='12' r='5' fill='%23C9A96E'/></svg>" />
+
+  <!-- ══ JSON-LD STRUCTURED DATA ══ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://stridetn.vercel.app/#organization",
+        "name": "StrideTN",
+        "url": "https://stridetn.vercel.app/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://stridetn.vercel.app/og-image.jpg"
+        },
+        "description": "Premium sportswear, leggings, shoes and accessories in Tunisia.",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "TN"
+        },
+        "sameAs": []
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://stridetn.vercel.app/#website",
+        "url": "https://stridetn.vercel.app/",
+        "name": "StrideTN",
+        "publisher": { "@id": "https://stridetn.vercel.app/#organization" },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://stridetn.vercel.app/?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "Store",
+        "@id": "https://stridetn.vercel.app/#store",
+        "name": "StrideTN",
+        "url": "https://stridetn.vercel.app/",
+        "description": "Premium sportswear and fashion store in Tunisia. Leggings, shoes, t-shirts, arm sleeves and accessories.",
+        "currenciesAccepted": "TND",
+        "paymentAccepted": "Cash on Delivery",
+        "areaServed": "TN",
+        "hasMap": "https://stridetn.vercel.app/"
+      }
+    ]
+  }
+  </script>
+
+  <!-- ══ PRECONNECT & FONTS ══ -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="https://stridetnbackend.vercel.app" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&family=Noto+Kufi+Arabic:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -60,13 +148,13 @@
   </a>
 
   <!-- Nav -->
-  <nav id="main-nav">
-    <button class="active" data-cat="all"          onclick="filterCat('all',this)"         >All</button>
-    <button             data-cat="accessories"  onclick="filterCat('accessories',this)"  >Accessories</button>
-    <button             data-cat="shoes"        onclick="filterCat('shoes',this)"        >Shoes</button>
-    <button             data-cat="leggings"     onclick="filterCat('leggings',this)"     >Leggings</button>
-    <button             data-cat="t-shirts"     onclick="filterCat('t-shirts',this)"     >T-Shirts</button>
-    <button             data-cat="arm-sleeves"  onclick="filterCat('arm-sleeves',this)"  >Arm Sleeves</button>
+  <nav id="main-nav" aria-label="Product categories">
+    <a role="button" class="cat-nav active" data-cat="all"         href="/?cat=all"         onclick="event.preventDefault();filterCat('all',this)"        >All</a>
+    <a role="button" class="cat-nav"        data-cat="accessories" href="/?cat=accessories" onclick="event.preventDefault();filterCat('accessories',this)" >Accessories</a>
+    <a role="button" class="cat-nav"        data-cat="shoes"       href="/?cat=shoes"       onclick="event.preventDefault();filterCat('shoes',this)"       >Shoes</a>
+    <a role="button" class="cat-nav"        data-cat="leggings"    href="/?cat=leggings"    onclick="event.preventDefault();filterCat('leggings',this)"    >Leggings</a>
+    <a role="button" class="cat-nav"        data-cat="t-shirts"    href="/?cat=t-shirts"    onclick="event.preventDefault();filterCat('t-shirts',this)"    >T-Shirts</a>
+    <a role="button" class="cat-nav"        data-cat="arm-sleeves" href="/?cat=arm-sleeves" onclick="event.preventDefault();filterCat('arm-sleeves',this)" >Arm Sleeves</a>
   </nav>
 
   <!-- Header right controls -->
@@ -120,7 +208,7 @@
 <!-- ════════════════════════════════════════
      HERO
 ════════════════════════════════════════ -->
-<section id="hero">
+<section id="hero" aria-label="Hero">
   <h1>Style That <em>Speaks</em><br>Before You Do</h1>
   <p id="hero-sub">Curated fashion for the modern individual</p>
   <div class="hero-btns">
@@ -136,7 +224,7 @@
 <!-- ════════════════════════════════════════
      SHOP
 ════════════════════════════════════════ -->
-<section id="shop">
+<section id="shop" aria-label="Product Catalogue">
   <h2 class="section-title" id="shop-title">Our Collection</h2>
   <p  class="section-sub"   id="shop-sub">Handpicked pieces for every stride</p>
 
@@ -152,7 +240,7 @@
   <div class="shop-controls">
     <div class="search-wrap">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="search" class="search-input" id="searchInput" placeholder="Search products…" oninput="applyFilters()" />
+      <input type="search" class="search-input" id="searchInput" name="q" placeholder="Search products…" oninput="applyFilters()" aria-label="Search products" />
     </div>
     <select class="sort-select" id="sortSelect" onchange="applyFilters()">
       <option value="default">Sort: Featured</option>
@@ -163,7 +251,7 @@
   </div>
 
   <p class="result-count" id="resultCount"></p>
-  <div class="product-grid" id="productGrid"></div>
+  <div class="product-grid" id="productGrid" aria-live="polite" aria-label="Products"></div>
 </section>
 
 <!-- ════════════════════════════════════════
@@ -220,7 +308,18 @@
     </div>
 
     <hr class="footer-divider" />
+    <!-- SEO footer links — crawlable category links -->
+    <nav class="footer-nav" aria-label="Footer navigation">
+      <a href="/?cat=accessories">Accessories</a>
+      <a href="/?cat=shoes">Shoes</a>
+      <a href="/?cat=leggings">Leggings</a>
+      <a href="/?cat=t-shirts">T-Shirts</a>
+      <a href="/?cat=arm-sleeves">Arm Sleeves</a>
+    </nav>
     <p class="footer-bottom">© 2025 <strong>StrideTN</strong>. All rights reserved. Made in Tunisia 🇹🇳</p>
+    <p class="footer-bottom" style="margin-top:6px;font-size:0.7rem;opacity:0.5">
+      Premium sportswear &amp; fashion · Cash on Delivery · Tunisia
+    </p>
   </div>
 </footer>
 
@@ -583,6 +682,17 @@ async function fetchProducts() {
 ══════════════════════════════════════════════════════════════ */
 function filterCat(cat, btn) {
   currentCat = cat;
+  /* Update page title and URL for SEO + browser history */
+  const catLabel = cat === 'all' ? '' : cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', ' ');
+  document.title = catLabel
+    ? `${catLabel} — StrideTN`
+    : 'StrideTN — Premium Sportswear & Fashion | Tunisia';
+  try {
+    const newUrl = cat === 'all'
+      ? location.pathname
+      : `${location.pathname}?cat=${encodeURIComponent(cat)}`;
+    history.replaceState({ cat }, '', newUrl);
+  } catch(e) {}
   document.querySelectorAll('nav button[data-cat]').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
 
