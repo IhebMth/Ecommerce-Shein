@@ -42,7 +42,12 @@ function openProduct(id) {
   if (p.oldPrice) { oldEl.textContent = fmt(p.oldPrice); discEl.textContent = `-${disc}%`; }
   else            { oldEl.textContent = ''; discEl.textContent = ''; }
 
-  const stockInfo = getStockStatus(p, null);
+  /* ── Stock status: check sizes first — total stock is irrelevant if all sizes are 0 ── */
+  const _allSizesZero = p.sizeStock && Object.keys(p.sizeStock).length > 0
+    && Object.values(p.sizeStock).every(v => v === 0);
+  const _effectiveStock = _allSizesZero ? 0 : p.stock;
+  const _effectiveP = { ...p, stock: _effectiveStock };
+  const stockInfo = getStockStatus(_effectiveP, null);
   const stockEl   = document.getElementById('modal-stock');
   stockEl.textContent = stockInfo.label;
   stockEl.className   = `modal-stock ${stockInfo.cls}`;
@@ -71,8 +76,12 @@ function openProduct(id) {
   // Sizes
   const sizesDiv = document.getElementById('modal-sizes');
   sizesDiv.innerHTML = p.sizes.map(s => {
-    const noStock = p.sizeStock && p.sizeStock[s] === 0;
-    return `<button class="size-btn${noStock ? ' no-stock' : ''}" data-size="${s}" ${noStock ? 'disabled' : ''}>${s}</button>`;
+    const sStock  = p.sizeStock ? (p.sizeStock[s] ?? null) : null;
+    const noStock = sStock === 0;
+    const lowStock = sStock !== null && sStock > 0 && sStock <= 3;
+    const badge   = lowStock ? `<sup style="font-size:8px;color:#E0A030;vertical-align:super">${sStock}</sup>` : '';
+    return `<button class="size-btn${noStock ? ' no-stock' : ''}" data-size="${s}" ${noStock ? 'disabled' : ''} title="${noStock ? t('modal.outOfStockSize') : (lowStock ? t('modal.lowStockSize').replace('{n}', sStock) : '')}">
+      ${s}${badge}</button>`;
   }).join('');
 
   sizesDiv.querySelectorAll('.size-btn:not(.no-stock)').forEach(btn => {
@@ -80,7 +89,15 @@ function openProduct(id) {
       sizesDiv.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       selectedSize = btn.dataset.size;
-      const st = getStockStatus(p, selectedSize);
+      const _sz = p.sizeStock ? (p.sizeStock[selectedSize] ?? null) : null;
+      let st;
+      if (_sz === 0) {
+        st = { label: t('modal.outOfStockSize'), cls: 'stock-none' };
+      } else if (_sz !== null && _sz <= 3) {
+        st = { label: t('modal.lowStockSize').replace('{n}', _sz), cls: 'stock-low' };
+      } else {
+        st = getStockStatus(p, selectedSize);
+      }
       stockEl.textContent = st.label;
       stockEl.className   = `modal-stock ${st.cls}`;
       updateAddBtn();
@@ -180,7 +197,10 @@ function selectModalColor(colorIdx) {
 function updateAddBtn() {
   const btn = document.getElementById('add-to-cart-btn');
   if (!btn || !currentProduct) return;
-  if (currentProduct.stock === 0)                                               { btn.textContent = t('modal.soldOut');     btn.disabled = true;  return; }
+  /* Check if all sizes are out of stock */
+  const _allZero = currentProduct.sizeStock && Object.keys(currentProduct.sizeStock).length > 0
+    && Object.values(currentProduct.sizeStock).every(v => v === 0);
+  if (currentProduct.stock === 0 || _allZero)                                   { btn.textContent = t('modal.soldOut');     btn.disabled = true;  return; }
   if (!selectedSize)                                                             { btn.textContent = t('modal.selectFirst'); btn.disabled = true;  return; }
   if (currentProduct.sizeStock && currentProduct.sizeStock[selectedSize] === 0) { btn.textContent = t('modal.unavailable'); btn.disabled = true;  return; }
   btn.textContent = t('modal.addToCart'); btn.disabled = false;
