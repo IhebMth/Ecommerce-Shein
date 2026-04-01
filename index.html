@@ -537,6 +537,13 @@ function normalizeProduct(p) {
     || p.category
     || '';
 
+  /* ── Effective stock: if sizes exist, sum their stocks.
+     p.stock from DB is the "total stock" field but is NOT updated when you
+     edit per-size stock. Sizes are the source of truth. ── */
+  const _effectiveStock = sizesNorm.length > 0
+    ? sizesNorm.reduce((sum, s) => sum + (s.stock || 0), 0)
+    : (p.stock ?? 999);
+
   return {
     _id:           String(p.id || p._id || ''),
     id:            p.id || p._id,
@@ -548,7 +555,7 @@ function normalizeProduct(p) {
       : (p.desc_en || (p.desc && p.desc.en) || p.description || ''),
     price:         parseFloat(p.price) || 0,
     originalPrice: p.old_price ? parseFloat(p.old_price) : (p.originalPrice ? parseFloat(p.originalPrice) : null),
-    stock:         p.stock ?? 999,
+    stock:         _effectiveStock,
     category:      category,
     active:        p.active !== false,
     images,
@@ -631,7 +638,8 @@ function renderProducts(list) {
     const inWish  = wishlist.includes(p._id);
     const disc    = p.originalPrice && p.price < p.originalPrice
       ? Math.round((1 - p.price/p.originalPrice)*100) : 0;
-    const stock   = p.stock ?? 999;
+    /* p.stock is already the sizes-sum from normalizeProduct */
+    const stock   = p.stock ?? 0;
     const badgeTxt= p.badge || (disc ? `-${disc}%` : '') || (stock === 0 ? 'Sold Out' : '') || (stock < 5 ? 'Low Stock' : '');
     const badgeCls= stock === 0 ? 'sold-out' : stock < 5 ? 'low' : '';
     const colors  = p.colors || [];
@@ -713,7 +721,9 @@ function openModal(id) {
   document.getElementById('modalPriceOld').textContent = p.originalPrice && disc ? `${p.originalPrice} DT` : '';
   document.getElementById('modalDiscount').textContent = disc ? `-${disc}%` : '';
 
-  const stock = p.stock ?? 999;
+  /* Stock: p.stock is already the sum of sizes (fixed in normalizeProduct).
+     If all sizes are 0 → effectively out of stock. */
+  const stock = p.stock ?? 0;
   const stockEl = document.getElementById('modalStock');
   if (stock === 0) { stockEl.textContent = 'Out of stock'; stockEl.className = 'modal-stock stock-none'; }
   else if (stock < 5) { stockEl.textContent = `Only ${stock} left!`; stockEl.className = 'modal-stock stock-low'; }
@@ -757,7 +767,7 @@ function openModal(id) {
   } else { sizeSec.style.display = 'none'; }
 
   document.getElementById('addToCartBtn').textContent = T[lang].addToCart;
-  document.getElementById('addToCartBtn').disabled = stock === 0;
+  document.getElementById('addToCartBtn').disabled = (stock === 0);
 
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
