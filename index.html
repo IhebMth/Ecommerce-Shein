@@ -18,37 +18,9 @@
 <!-- ════════════════════════════════════════
      ANNOUNCEMENT BANNER
 ════════════════════════════════════════ -->
-<div id="announcement-banner" style="
-  background: linear-gradient(90deg, #1a1a1a 0%, #2d2417 100%);
-  color: #c9a96e;
-  text-align: center;
-  padding: 10px 1rem;
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  position: relative;
-">
-  <span id="announcement-banner-text">🔥 <strong>Summer Sale</strong> — Up to 40% off selected styles. Limited time only!</span>
-  <a href="#shop" style="
-    background: rgba(201,169,110,0.15);
-    border: 1px solid rgba(201,169,110,0.4);
-    color: #c9a96e;
-    padding: 4px 14px;
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    text-decoration: none;
-    font-weight: 600;
-    transition: background 0.2s;
-  " onmouseover="this.style.background='rgba(201,169,110,0.28)'" onmouseout="this.style.background='rgba(201,169,110,0.15)'">SHOP SALE</a>
-  <button onclick="this.parentElement.style.display='none'" style="
-    position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
-    background: none; border: none; color: #666; font-size: 1rem; cursor: pointer; padding: 4px;
-  ">✕</button>
+<!-- Promo banner is injected dynamically by engagement.js from backend settings -->
+<div id="announcement-banner" style="display:none">
+  <span id="announcement-banner-text"></span>
 </div>
 
 <!-- ════════════════════════════════════════
@@ -789,9 +761,6 @@ function openModal(id) {
 
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
-
-  /* Load reviews for this product */
-  renderModalReviews(p);
 }
 
 function closeModal() {
@@ -1057,200 +1026,6 @@ function checkDeepLink() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   MODAL REVIEWS — fetch + render + submit form inside modal
-══════════════════════════════════════════════════════════════ */
-async function renderModalReviews(product) {
-  /* Remove previous instance */
-  const old = document.getElementById('modal-reviews-wrap');
-  if (old) old.remove();
-
-  const modalInfo = document.querySelector('.modal-info');
-  if (!modalInfo) return;
-
-  const isAr = lang === 'ar';
-  const L = {
-    title:      isAr ? 'تقييمات العملاء'                    : 'Customer Reviews',
-    noReviews:  isAr ? 'لا توجد تقييمات بعد — كوني أول من يقيّم!' : 'No reviews yet — be the first!',
-    writeTitle: isAr ? 'اكتبي تقييمك'                       : 'Write a Review',
-    namePH:     isAr ? 'اسمك'                               : 'Your name',
-    textPH:     isAr ? 'شاركينا تجربتك…'                   : 'Share your experience…',
-    submit:     isAr ? 'إرسال التقييم'                      : 'Submit Review',
-    sending:    isAr ? 'جاري الإرسال...'                    : 'Sending...',
-    ok:         isAr ? '✓ شكراً! سيتم نشره بعد المراجعة.'  : '✓ Thank you! Your review will appear after moderation.',
-    errStars:   isAr ? 'يرجى اختيار تقييم بالنجوم.'        : 'Please select a star rating.',
-    errEmpty:   isAr ? 'يرجى ملء اسمك ونص التقييم.'        : 'Please fill in your name and review.',
-    errFail:    isAr ? 'حدث خطأ، يرجى المحاولة مجدداً.'    : 'Something went wrong. Please try again.',
-    verified:   isAr ? 'شراء موثق'                          : 'Verified Purchase',
-  };
-
-  const wrap = document.createElement('div');
-  wrap.id  = 'modal-reviews-wrap';
-  wrap.dir = isAr ? 'rtl' : 'ltr';
-  wrap.innerHTML = `
-<style>
-  #modal-reviews-wrap {
-    margin-top: 28px;
-    border-top: 1px solid rgba(212,170,106,.15);
-    padding-top: 22px;
-  }
-  .mrw-title {
-    font-family:'Cormorant Garamond',Georgia,serif;
-    font-size:15px;font-weight:700;
-    color:#C9A96E;letter-spacing:.5px;
-    margin:0 0 14px;
-  }
-  .mrw-list { display:flex;flex-direction:column;gap:10px;margin-bottom:18px; }
-  .mrw-card {
-    background:rgba(255,255,255,.03);
-    border:1px solid rgba(212,170,106,.12);
-    border-radius:10px;padding:12px 14px;
-  }
-  .mrw-card-top { display:flex;align-items:center;justify-content:space-between;margin-bottom:5px; }
-  .mrw-author { font-size:12px;font-weight:600;color:rgba(255,255,255,.75); }
-  .mrw-stars  { font-size:13px;color:#C9A96E;letter-spacing:1px; }
-  .mrw-text   { font-size:12px;color:rgba(255,255,255,.5);line-height:1.55;margin:0; }
-  .mrw-verified { font-size:10px;color:#42C882;margin-top:5px; }
-  .mrw-none   { font-size:12px;color:rgba(255,255,255,.25);text-align:center;padding:10px 0; }
-  .mrw-form-title {
-    font-size:12px;letter-spacing:1.5px;text-transform:uppercase;
-    color:rgba(255,255,255,.3);margin:0 0 10px;
-  }
-  .mrw-stars-pick { display:flex;gap:4px;margin-bottom:10px; }
-  .mrw-stars-pick span {
-    font-size:22px;color:rgba(255,255,255,.12);
-    cursor:pointer;transition:color .12s,transform .1s;user-select:none;
-  }
-  .mrw-stars-pick span.on { color:#C9A96E; }
-  .mrw-stars-pick span:hover { transform:scale(1.15); }
-  .mrw-input, .mrw-ta {
-    width:100%;box-sizing:border-box;
-    background:rgba(255,255,255,.04);
-    border:1px solid rgba(212,170,106,.15);
-    border-radius:8px;color:rgba(255,255,255,.8);
-    font-family:inherit;font-size:12.5px;
-    padding:10px 12px;outline:none;margin-bottom:8px;
-    transition:border-color .2s;
-  }
-  .mrw-input::placeholder,.mrw-ta::placeholder{color:rgba(255,255,255,.18);}
-  .mrw-input:focus,.mrw-ta:focus{border-color:rgba(212,170,106,.45);}
-  .mrw-ta{resize:vertical;min-height:72px;line-height:1.5;}
-  .mrw-btn {
-    width:100%;padding:11px;
-    background:linear-gradient(135deg,#C9A96E,#8a6030);
-    color:#0a0a0f;font-family:inherit;font-size:11px;
-    font-weight:700;letter-spacing:1.8px;text-transform:uppercase;
-    border:none;border-radius:8px;cursor:pointer;
-    transition:opacity .2s,transform .12s;
-  }
-  .mrw-btn:hover:not(:disabled){opacity:.88;transform:translateY(-1px);}
-  .mrw-btn:disabled{opacity:.45;cursor:not-allowed;}
-  .mrw-msg {
-    display:none;margin-top:8px;padding:9px 12px;
-    border-radius:7px;font-size:12px;text-align:center;
-  }
-  .mrw-msg.ok  {display:block;background:rgba(66,200,130,.1);border:1px solid rgba(66,200,130,.22);color:#42C882;}
-  .mrw-msg.err {display:block;background:rgba(224,96,96,.1);border:1px solid rgba(224,96,96,.22);color:#E06060;}
-</style>
-
-<p class="mrw-title">${L.title}</p>
-<div class="mrw-list" id="mrwList"><p class="mrw-none">…</p></div>
-
-<p class="mrw-form-title">${L.writeTitle}</p>
-<div class="mrw-stars-pick" id="mrwStars">
-  <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
-</div>
-<input  class="mrw-input" id="mrwName" type="text"  placeholder="${L.namePH}" maxlength="80" />
-<textarea class="mrw-ta"  id="mrwText" placeholder="${L.textPH}" maxlength="600"></textarea>
-<button class="mrw-btn"   id="mrwBtn">${L.submit}</button>
-<div class="mrw-msg" id="mrwMsg"></div>`;
-
-  modalInfo.appendChild(wrap);
-
-  /* ── Fetch reviews ── */
-  const listEl = wrap.querySelector('#mrwList');
-  try {
-    const res  = await fetch(BACKEND_URL + '/api/reviews?product_id=' + product._id);
-    const json = await res.json();
-    const rows = json.reviews ?? [];
-    if (rows.length === 0) {
-      listEl.innerHTML = `<p class="mrw-none">${L.noReviews}</p>`;
-    } else {
-      listEl.innerHTML = rows.map(r => {
-        const text = (isAr && r.text_ar) ? r.text_ar : r.text_en;
-        return `
-        <div class="mrw-card">
-          <div class="mrw-card-top">
-            <span class="mrw-author">${r.author}</span>
-            <span class="mrw-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</span>
-          </div>
-          <p class="mrw-text">${text}</p>
-          <p class="mrw-verified">✓ ${L.verified}</p>
-        </div>`;
-      }).join('');
-    }
-  } catch (_) {
-    listEl.innerHTML = `<p class="mrw-none">${L.noReviews}</p>`;
-  }
-
-  /* ── Star picker ── */
-  let picked = 0;
-  const starEls = wrap.querySelectorAll('#mrwStars span');
-  function paintMrwStars(n) { starEls.forEach((s, i) => s.classList.toggle('on', i < n)); }
-  starEls.forEach((s, idx) => {
-    s.addEventListener('mouseenter', () => paintMrwStars(idx + 1));
-    s.addEventListener('mouseleave', () => paintMrwStars(picked));
-    s.addEventListener('click',      () => { picked = idx + 1; paintMrwStars(picked); });
-  });
-
-  /* ── Submit ── */
-  const btn = wrap.querySelector('#mrwBtn');
-  const msg = wrap.querySelector('#mrwMsg');
-
-  btn.addEventListener('click', async () => {
-    const author  = wrap.querySelector('#mrwName').value.trim();
-    const text_en = wrap.querySelector('#mrwText').value.trim();
-    msg.className = 'mrw-msg';
-
-    if (!picked)             { msg.className = 'mrw-msg err'; msg.textContent = L.errStars; return; }
-    if (!author || !text_en) { msg.className = 'mrw-msg err'; msg.textContent = L.errEmpty; return; }
-
-    btn.disabled = true;
-    btn.textContent = L.sending;
-
-    try {
-      const res = await fetch(BACKEND_URL + '/api/reviews', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          product_id: product._id,
-          stars:      picked,
-          text_en,
-          text_ar:    null,
-          author,
-        }),
-      });
-      const json = await res.json();
-      if (res.ok && json.success) {
-        msg.className   = 'mrw-msg ok';
-        msg.textContent = L.ok;
-        wrap.querySelector('#mrwName').value = '';
-        wrap.querySelector('#mrwText').value = '';
-        picked = 0;
-        paintMrwStars(0);
-      } else {
-        throw new Error(json.error || 'error');
-      }
-    } catch (e) {
-      msg.className   = 'mrw-msg err';
-      msg.textContent = e.message === 'error' ? L.errFail : e.message;
-    }
-
-    btn.disabled    = false;
-    btn.textContent = L.submit;
-  });
-}
-
-/* ══════════════════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════════════════ */
 /* Expose on window so auth-modal.js hookLang() and patchCheckout() can wrap them */
@@ -1268,6 +1043,16 @@ fetchProducts().then(checkDeepLink);
      window.setLang and window.openCheckout already exist.
 ════════════════════════════════════════ -->
 <script src="auth-modal.js"></script>
+
+<!-- ════════════════════════════════════════
+     ENGAGEMENT.JS — promo banner, newsletter popup,
+     countdown timer, recently viewed.
+     Reads live settings from /api/settings so the
+     promo text, timer date, etc. always reflect what
+     you saved in the admin Settings page.
+     Must load AFTER auth-modal.js and the main script.
+════════════════════════════════════════ -->
+<script src="engagement.js"></script>
 
 <!-- WhatsApp Float Button (shown/hidden by settings) -->
 <a id="whatsapp-float" href="https://wa.me/" target="_blank" rel="noopener"
