@@ -826,6 +826,16 @@ body[dir="rtl"] .footer-tagline { letter-spacing: 0; }
   .bottom-nav { display: flex; }
 }
 
+/* ── WhatsApp Float Button ── */
+.whatsapp-float {
+  /* Base styles are inline on the element; this adds the pulse */
+  animation: wa-pulse 2.5s ease-in-out 3s 3; /* pulse 3 times after 3s delay */
+}
+@keyframes wa-pulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(37,211,102,0.4); }
+  50%       { box-shadow: 0 4px 28px rgba(37,211,102,0.75), 0 0 0 8px rgba(37,211,102,0.12); }
+}
+
 /* ── BOTTOM NAVIGATION BAR (mobile only) ── */
 .bottom-nav {
   display: none;
