@@ -1,0 +1,11 @@
+# robots.txt — tells Google to index everything except /admin/ and /api/, and points to the sitemap
+# StrideTN — stridetn.vercel.app
+User-agent: *
+Allow: /
+
+# Block admin panel from indexing
+Disallow: /admin/
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://stridetn.vercel.app/sitemap.xml

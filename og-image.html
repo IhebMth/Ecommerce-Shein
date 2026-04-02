@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0E0E16; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .og { width: 1200px; height: 630px; position: relative; overflow: hidden; }
+</style>
+</head>
+<body>
+<div class="og">
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#0E0E16"/><stop offset="100%" stop-color="#1C1A12"/>
+  </linearGradient>
+  <linearGradient id="hg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#E8C87A"/><stop offset="100%" stop-color="#9A6E2A"/>
+  </linearGradient>
+  <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#E8C87A"/><stop offset="100%" stop-color="#B8892E"/>
+  </linearGradient>
+  <linearGradient id="glowGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#C9A96E" stop-opacity="0.18"/>
+    <stop offset="100%" stop-color="#C9A96E" stop-opacity="0"/>
+  </linearGradient>
+  <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%" stop-color="#C9A96E" stop-opacity="0"/>
+    <stop offset="50%" stop-color="#C9A96E" stop-opacity="0.8"/>
+    <stop offset="100%" stop-color="#C9A96E" stop-opacity="0"/>
+  </linearGradient>
+</defs>
+<rect width="1200" height="630" fill="url(#bgGrad)"/>
+<g stroke="#C9A96E" stroke-opacity="0.04" stroke-width="1">
+  <line x1="0" y1="105" x2="1200" y2="105"/><line x1="0" y1="210" x2="1200" y2="210"/>
+  <line x1="0" y1="315" x2="1200" y2="315"/><line x1="0" y1="420" x2="1200" y2="420"/>
+  <line x1="0" y1="525" x2="1200" y2="525"/>
+  <line x1="200" y1="0" x2="200" y2="630"/><line x1="400" y1="0" x2="400" y2="630"/>
+  <line x1="600" y1="0" x2="600" y2="630"/><line x1="800" y1="0" x2="800" y2="630"/>
+  <line x1="1000" y1="0" x2="1000" y2="630"/>
+</g>
+<ellipse cx="600" cy="315" rx="280" ry="280" fill="url(#glowGrad)"/>
+<polygon points="600,80 810,197 810,433 600,550 390,433 390,197" fill="none" stroke="#C9A96E" stroke-width="1.5" stroke-opacity="0.25"/>
+<polygon points="600,130 760,222 760,408 600,500 440,408 440,222" fill="none" stroke="#C9A96E" stroke-width="0.8" stroke-opacity="0.12"/>
+<g transform="translate(408,123) scale(6)">
+  <polygon points="32,4 58,18 58,46 32,60 6,46 6,18" fill="none" stroke="url(#hg)" stroke-width="1.5" stroke-opacity="0.5"/>
+  <g transform="translate(16,10)">
+    <polygon points="4,2 13,22 18,20 9,0" fill="url(#rg)"/>
+    <circle cx="7" cy="2" r="5" fill="url(#rg)"/>
+    <path d="M13,22 Q15,30 12,38" stroke="#C9A96E" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M18,20 Q24,14 30,12" stroke="#C9A96E" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M8,10 Q4,17 2,20" stroke="#C9A96E" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M9,9 Q14,5 18,3" stroke="#C9A96E" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </g>
+</g>
+<rect x="100" y="462" width="1000" height="1" fill="url(#lineGrad)"/>
+<text x="600" y="542" font-family="Georgia, serif" font-size="88" font-weight="700" fill="#C9A96E" letter-spacing="28" text-anchor="middle">STRIDE</text>
+<rect x="878" y="550" width="72" height="34" rx="6" fill="#C9A96E"/>
+<text x="914" y="574" font-family="Arial Black, Arial, sans-serif" font-size="18" font-weight="900" fill="#0E0E16" text-anchor="middle" letter-spacing="2">TN</text>
+<text x="600" y="600" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#C9A96E" fill-opacity="0.55" letter-spacing="6" text-anchor="middle">RUN YOUR LIMIT</text>
+<line x1="100" y1="280" x2="340" y2="280" stroke="#C9A96E" stroke-opacity="0.15" stroke-width="1.5"/>
+<line x1="120" y1="300" x2="350" y2="300" stroke="#C9A96E" stroke-opacity="0.08" stroke-width="1"/>
+<line x1="860" y1="280" x2="1100" y2="280" stroke="#C9A96E" stroke-opacity="0.15" stroke-width="1.5"/>
+<line x1="850" y1="300" x2="1080" y2="300" stroke="#C9A96E" stroke-opacity="0.08" stroke-width="1"/>
+<circle cx="100" cy="100" r="3" fill="#C9A96E" fill-opacity="0.3"/>
+<circle cx="1100" cy="100" r="3" fill="#C9A96E" fill-opacity="0.3"/>
+<circle cx="100" cy="530" r="3" fill="#C9A96E" fill-opacity="0.3"/>
+<circle cx="1100" cy="530" r="3" fill="#C9A96E" fill-opacity="0.3"/>
+<rect x="30" y="30" width="1140" height="570" rx="8" fill="none" stroke="#C9A96E" stroke-width="0.8" stroke-opacity="0.2"/>
+</svg>
+</div>
+
+<script>
+window.onload = function() {
+  const svg = document.querySelector('svg');
+  const data = new XMLSerializer().serializeToString(svg);
+  const canvas = document.createElement('canvas');
+  canvas.width = 1200; canvas.height = 630;
+  const ctx = canvas.getContext('2d');
+  const img = new Image();
+  img.onload = function() {
+    ctx.drawImage(img, 0, 0);
+    const a = document.createElement('a');
+    a.download = 'og-image.jpg';
+    a.href = canvas.toDataURL('image/jpeg', 0.95);
+    a.click();
+  };
+  img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(data)));
+};
+</script>
+</body>
+</html>

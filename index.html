@@ -3,14 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-site-verification" content="z9prJxT0bs9g0MUjqa2oMrxho3LdvnsRueKvyjH2O3s" />
 
   <!-- ══ PRIMARY SEO ══ -->
-  <title>StrideTN — Premium Sportswear &amp; Fashion | Tunisia</title>
-  <meta name="description" content="StrideTN — Premium sportswear, leggings, shoes and accessories. Cash on Delivery in Tunisia. Style That Speaks Before You Do." />
-  <meta name="keywords" content="StrideTN, sportswear Tunisia, leggings Tunisia, fashion online Tunisia, arm sleeves, running gear, activewear" />
+  <title>StrideTN | Sportswear &amp; Mode en Tunisie — Livraison à Domicile</title>
+  <meta name="description" content="StrideTN — أفضل ملابس رياضية في تونس. Leggings, chaussures, t-shirts, accessoires sportifs. Livraison Cash à Domicile dans toute la Tunisie. ملابس رياضية عالية الجودة." />
+  <meta name="keywords" content="StrideTN, stride tn, ملابس رياضية تونس, sportswear Tunisie, leggings Tunisie, chaussures sport Tunisie, mode Tunisie, livraison à domicile Tunisie, activewear Tunisia, running gear Tunisia, bras de compression, arm sleeves Tunisia, t-shirts sport Tunisie, أحذية رياضية تونس, لغنز تونس" />
   <meta name="author" content="StrideTN" />
   <meta name="robots" content="index, follow, max-image-preview:large" />
   <link rel="canonical" href="https://stridetn.vercel.app/" />
+  
 
   <!-- ══ OPEN GRAPH — WhatsApp / Facebook / LinkedIn previews ══ -->
   <meta property="og:type"        content="website" />
@@ -36,6 +38,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="StrideTN" />
 
+
+
   <!-- ══ FAVICON — inline SVG, no extra file needed ══ -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><polygon points='32,4 58,18 58,46 32,60 6,46 6,18' fill='none' stroke='%23C9A96E' stroke-width='3'/><polygon points='24,14 33,34 40,31 31,11' fill='%23C9A96E'/><circle cx='27' cy='12' r='5' fill='%23C9A96E'/></svg>" />
 
@@ -48,15 +52,30 @@
         "@type": "Organization",
         "@id": "https://stridetn.vercel.app/#organization",
         "name": "StrideTN",
+        "alternateName": ["Stride TN", "StrideTN Tunisia"],
+
         "url": "https://stridetn.vercel.app/",
-        "description": "Premium sportswear, leggings, shoes and accessories in Tunisia.",
-        "address": { "@type": "PostalAddress", "addressCountry": "TN" }
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://stridetn.vercel.app/og-image.jpg",
+          "width": 1200,
+          "height": 630
+        },
+        "description": "StrideTN — Premium sportswear, leggings, shoes and accessories. Cash on Delivery in Tunisia.",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "TN",
+          "addressLocality": "Tunisia"
+        },
+        "sameAs": []
       },
       {
         "@type": "WebSite",
         "@id": "https://stridetn.vercel.app/#website",
         "url": "https://stridetn.vercel.app/",
         "name": "StrideTN",
+        "description": "Premium sportswear and fashion in Tunisia",
+        "inLanguage": ["en", "ar"],
         "publisher": { "@id": "https://stridetn.vercel.app/#organization" },
         "potentialAction": {
           "@type": "SearchAction",
@@ -69,12 +88,28 @@
       },
       {
         "@type": "Store",
+        "@id": "https://stridetn.vercel.app/#store",
         "name": "StrideTN",
         "url": "https://stridetn.vercel.app/",
-        "description": "Premium sportswear and fashion in Tunisia. Leggings, shoes, t-shirts, arm sleeves and accessories.",
+        "image": "https://stridetn.vercel.app/og-image.jpg",
+        "description": "StrideTN — Premium sportswear, leggings, shoes and accessories in Tunisia. Cash on Delivery across all governorates.",
         "currenciesAccepted": "TND",
         "paymentAccepted": "Cash on Delivery",
-        "areaServed": "TN"
+        "areaServed": {
+          "@type": "Country",
+          "name": "Tunisia"
+        },
+        "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "StrideTN Collection",
+          "itemListElement": [
+            { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Leggings Tunisia" } },
+            { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Sportswear Tunisia" } },
+            { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Running Shoes Tunisia" } },
+            { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Arm Sleeves Tunisia" } },
+            { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "T-Shirts Tunisia" } }
+          ]
+        }
       }
     ]
   }
@@ -84,6 +119,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="dns-prefetch" href="https://stridetnbackend.vercel.app" />
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+  <link rel="alternate" hreflang="en" href="https://stridetn.vercel.app/" />
+  <link rel="alternate" hreflang="ar" href="https://stridetn.vercel.app/?lang=ar" />
+  <link rel="alternate" hreflang="x-default" href="https://stridetn.vercel.app/" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&family=Noto+Kufi+Arabic:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -1346,15 +1385,13 @@ fetchProducts().then(checkDeepLink);
 ════════════════════════════════════════ -->
 <script src="auth-modal.js"></script>
 
-<!-- WhatsApp Float Button — always visible, hidden by admin settings if needed -->
-<a id="whatsapp-float" class="whatsapp-float" href="https://wa.me/26530932" target="_blank" rel="noopener"
+<!-- WhatsApp Float Button (shown/hidden by settings) -->
+<a id="whatsapp-float" href="https://wa.me/" target="_blank" rel="noopener"
    aria-label="Chat on WhatsApp"
-   style="display:flex;position:fixed;bottom:24px;right:24px;z-index:900;
+   style="display:none;position:fixed;bottom:24px;right:24px;z-index:900;
           width:52px;height:52px;border-radius:50%;
           background:#25D366;box-shadow:0 4px 16px rgba(37,211,102,0.4);
-          align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s;"
-   onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 24px rgba(37,211,102,0.6)'"
-   onmouseout="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(37,211,102,0.4)'">
+          align-items:center;justify-content:center;transition:transform .2s;">
   <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
        fill="white">
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15
